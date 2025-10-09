@@ -1,0 +1,129 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+debug.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# pytest
+.cache
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+myvenv/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+modern_refactored.log
+
+# Excel backup files
+*.xlsx~
+
+# Ignore large data or results files if not needed
+test*.csv
+G2S_Search_Results_*.csv
+output/
+results/
+scraped_data/
+*.csv
+!sample_input.csv
+
+# Ignore backup or temp files
+*~
+*.bak
+*.tmp
+
+# Multi-client specific ignores
+# Cache directories
+.cache/
+debug_html/
+
+# Client secrets and configuration files with sensitive data
+client_secrets.json
+api_keys.json
+proxy_config.json
+email_config.json
+
+# Generated client files (uncomment if you don't want to track auto-generated clients)
+# clients/generated_*.py
+# clients/custom_*.py
+# clients/production_*.py
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary client generation files
+temp_client.py
+temp_config.json

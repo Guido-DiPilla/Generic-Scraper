@@ -1,0 +1,5 @@
+{
+  "log_file": "modern_refactored.log",
+  "log_level": "INFO",
+  "json_logs": true
+}
