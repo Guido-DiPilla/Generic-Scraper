@@ -211,7 +211,13 @@ class ClientGeneratorGUI:
         proxy_frame = ttk.LabelFrame(scrollable_frame, text="Proxy Configuration")
         proxy_frame.pack(fill='x', padx=20, pady=10)
         
-        self.use_proxy_var = tk.BooleanVar()
+        # Add instruction label
+        instruction_label = ttk.Label(proxy_frame, text="Default proxy settings are pre-filled but can be edited for different clients:", 
+                                    font=('Arial', 9), foreground='gray')
+        instruction_label.pack(anchor='w', padx=5, pady=(5, 0))
+        
+        # Default to proxy enabled with your credentials pre-filled
+        self.use_proxy_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(proxy_frame, text="Use proxy", variable=self.use_proxy_var,
                        command=self.toggle_proxy_fields).pack(anchor='w', padx=5, pady=5)
         
@@ -220,15 +226,15 @@ class ClientGeneratorGUI:
         self.proxy_fields_frame.pack(fill='x', padx=20, pady=5)
         
         ttk.Label(self.proxy_fields_frame, text="Proxy URL:").grid(row=0, column=0, sticky='w', pady=5)
-        self.proxy_url_var = tk.StringVar()
+        self.proxy_url_var = tk.StringVar(value="rp.proxyscrape.com:6060")
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_url_var, width=40).grid(row=0, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Username:").grid(row=1, column=0, sticky='w', pady=5)
-        self.proxy_username_var = tk.StringVar()
+        self.proxy_username_var = tk.StringVar(value="your_proxy_user")
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_username_var, width=40).grid(row=1, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Password:").grid(row=2, column=0, sticky='w', pady=5)
-        self.proxy_password_var = tk.StringVar()
+        self.proxy_password_var = tk.StringVar(value="your_proxy_pass")
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_password_var, width=40, show='*').grid(row=2, column=1, sticky='w', padx=5)
         
         # Headers Section
