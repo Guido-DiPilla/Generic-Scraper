@@ -230,11 +230,11 @@ class ClientGeneratorGUI:
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_url_var, width=40).grid(row=0, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Username:").grid(row=1, column=0, sticky='w', pady=5)
-        self.proxy_username_var = tk.StringVar(value="your_proxy_user")
+        self.proxy_username_var = tk.StringVar(value="ukxv6pnb5wervp3")
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_username_var, width=40).grid(row=1, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Password:").grid(row=2, column=0, sticky='w', pady=5)
-        self.proxy_password_var = tk.StringVar(value="your_proxy_pass")
+        self.proxy_password_var = tk.StringVar(value="eww7ejd4luzk3vn")
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_password_var, width=40, show='*').grid(row=2, column=1, sticky='w', padx=5)
         
         # Headers Section
