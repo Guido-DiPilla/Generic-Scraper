@@ -47,7 +47,12 @@ class ClientGeneratorGUI:
         notebook.add(fields_frame, text="Field Mappings")
         self.setup_fields_tab(fields_frame)
         
-        # Tab 4: Preview & Generate
+        # Tab 4: Advanced Settings
+        advanced_frame = ttk.Frame(notebook)
+        notebook.add(advanced_frame, text="Advanced")
+        self.setup_advanced_tab(advanced_frame)
+        
+        # Tab 5: Preview & Generate
         preview_frame = ttk.Frame(notebook)
         notebook.add(preview_frame, text="Preview & Generate")
         self.setup_preview_tab(preview_frame)
@@ -161,6 +166,114 @@ class ClientGeneratorGUI:
         
         # Add some default fields
         self.add_default_fields()
+    
+    def setup_advanced_tab(self, parent):
+        """Set up advanced configuration tab."""
+        ttk.Label(parent, text="Advanced Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(parent)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Rate Limiting Section
+        rate_frame = ttk.LabelFrame(scrollable_frame, text="Rate Limiting & Performance")
+        rate_frame.pack(fill='x', padx=20, pady=10)
+        
+        # Rate limit
+        ttk.Label(rate_frame, text="Requests per second:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        self.rate_limit_var = tk.StringVar(value="1.0")
+        ttk.Entry(rate_frame, textvariable=self.rate_limit_var, width=10).grid(row=0, column=1, sticky='w', padx=5)
+        
+        # Timeout settings
+        ttk.Label(rate_frame, text="Request timeout (seconds):").grid(row=1, column=0, sticky='w', pady=5, padx=5)
+        self.request_timeout_var = tk.StringVar(value="30")
+        ttk.Entry(rate_frame, textvariable=self.request_timeout_var, width=10).grid(row=1, column=1, sticky='w', padx=5)
+        
+        ttk.Label(rate_frame, text="Total timeout (seconds):").grid(row=2, column=0, sticky='w', pady=5, padx=5)
+        self.total_timeout_var = tk.StringVar(value="300")
+        ttk.Entry(rate_frame, textvariable=self.total_timeout_var, width=10).grid(row=2, column=1, sticky='w', padx=5)
+        
+        # Retry settings
+        ttk.Label(rate_frame, text="Max retries:").grid(row=3, column=0, sticky='w', pady=5, padx=5)
+        self.max_retries_var = tk.StringVar(value="3")
+        ttk.Entry(rate_frame, textvariable=self.max_retries_var, width=10).grid(row=3, column=1, sticky='w', padx=5)
+        
+        # Proxy Configuration Section
+        proxy_frame = ttk.LabelFrame(scrollable_frame, text="Proxy Configuration")
+        proxy_frame.pack(fill='x', padx=20, pady=10)
+        
+        self.use_proxy_var = tk.BooleanVar()
+        ttk.Checkbutton(proxy_frame, text="Use proxy", variable=self.use_proxy_var,
+                       command=self.toggle_proxy_fields).pack(anchor='w', padx=5, pady=5)
+        
+        # Proxy fields frame
+        self.proxy_fields_frame = ttk.Frame(proxy_frame)
+        self.proxy_fields_frame.pack(fill='x', padx=20, pady=5)
+        
+        ttk.Label(self.proxy_fields_frame, text="Proxy URL:").grid(row=0, column=0, sticky='w', pady=5)
+        self.proxy_url_var = tk.StringVar()
+        ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_url_var, width=40).grid(row=0, column=1, sticky='w', padx=5)
+        
+        ttk.Label(self.proxy_fields_frame, text="Username:").grid(row=1, column=0, sticky='w', pady=5)
+        self.proxy_username_var = tk.StringVar()
+        ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_username_var, width=40).grid(row=1, column=1, sticky='w', padx=5)
+        
+        ttk.Label(self.proxy_fields_frame, text="Password:").grid(row=2, column=0, sticky='w', pady=5)
+        self.proxy_password_var = tk.StringVar()
+        ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_password_var, width=40, show='*').grid(row=2, column=1, sticky='w', padx=5)
+        
+        # Headers Section
+        headers_frame = ttk.LabelFrame(scrollable_frame, text="Custom Headers")
+        headers_frame.pack(fill='x', padx=20, pady=10)
+        
+        ttk.Label(headers_frame, text="User Agent:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        self.user_agent_var = tk.StringVar(value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        ttk.Entry(headers_frame, textvariable=self.user_agent_var, width=60).grid(row=0, column=1, sticky='w', padx=5)
+        
+        # Additional headers
+        ttk.Label(headers_frame, text="Additional Headers (JSON format):").grid(row=1, column=0, sticky='nw', pady=5, padx=5)
+        self.custom_headers_text = tk.Text(headers_frame, height=4, width=50)
+        self.custom_headers_text.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+        self.custom_headers_text.insert('1.0', '{\n  "Accept": "text/html,application/xhtml+xml",\n  "Accept-Language": "en-US,en;q=0.9"\n}')
+        
+        # Validation & Processing Section
+        validation_frame = ttk.LabelFrame(scrollable_frame, text="Validation & Processing")
+        validation_frame.pack(fill='x', padx=20, pady=10)
+        
+        self.strict_validation_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(validation_frame, text="Strict field validation", 
+                       variable=self.strict_validation_var).pack(anchor='w', padx=5, pady=5)
+        
+        self.save_html_var = tk.BooleanVar()
+        ttk.Checkbutton(validation_frame, text="Save HTML responses for debugging", 
+                       variable=self.save_html_var).pack(anchor='w', padx=5, pady=5)
+        
+        self.log_requests_var = tk.BooleanVar()
+        ttk.Checkbutton(validation_frame, text="Log HTTP requests/responses", 
+                       variable=self.log_requests_var).pack(anchor='w', padx=5, pady=5)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True, padx=(20, 0))
+        scrollbar.pack(side="right", fill="y", padx=(0, 20))
+        
+        # Initially disable proxy fields
+        self.toggle_proxy_fields()
+    
+    def toggle_proxy_fields(self):
+        """Enable/disable proxy fields based on checkbox."""
+        state = 'normal' if self.use_proxy_var.get() else 'disabled'
+        for widget in self.proxy_fields_frame.winfo_children():
+            if isinstance(widget, ttk.Entry):
+                widget.configure(state=state)
     
     def setup_preview_tab(self, parent):
         """Set up preview and generation tab."""
@@ -337,20 +450,105 @@ def {func_name}() -> ClientConfig:
     
     output_columns = {output_columns}
     
-    return ClientConfig(
-        client_id="{client_id}",
-        client_name="{client_name}",
-        description="{description}",
-        base_url="{base_url}",
-        search_endpoint="{search_endpoint}",
-        search_param_name="{search_param}",
-        product_link_selector="{product_selector}",
-        field_mappings=field_mappings,
-        part_number_regex=r'^[\\w\\-/\\.]{{1,64}}$',
-        normalize_part_number={str(self.normalize_parts_var.get())},
-        exact_match_required={str(self.exact_match_var.get())},
-        output_columns=output_columns
-    )
+    # Advanced configuration
+    advanced_config = {{}}
+    
+    # Rate limiting and performance settings
+    if hasattr(self, 'rate_limit_var') and self.rate_limit_var.get():
+        try:
+            rate_limit = float(self.rate_limit_var.get())
+            if rate_limit != 1.0:
+                advanced_config['rate_limit'] = rate_limit
+        except ValueError:
+            pass
+    
+    if hasattr(self, 'request_timeout_var') and self.request_timeout_var.get():
+        try:
+            timeout = int(self.request_timeout_var.get())
+            if timeout != 30:
+                advanced_config['request_timeout'] = timeout
+        except ValueError:
+            pass
+    
+    if hasattr(self, 'total_timeout_var') and self.total_timeout_var.get():
+        try:
+            total_timeout = int(self.total_timeout_var.get())
+            if total_timeout != 300:
+                advanced_config['total_timeout'] = total_timeout
+        except ValueError:
+            pass
+    
+    if hasattr(self, 'max_retries_var') and self.max_retries_var.get():
+        try:
+            max_retries = int(self.max_retries_var.get())
+            if max_retries != 3:
+                advanced_config['max_retries'] = max_retries
+        except ValueError:
+            pass
+    
+    # Proxy configuration
+    if hasattr(self, 'use_proxy_var') and self.use_proxy_var.get():
+        proxy_config = {{}}
+        if self.proxy_url_var.get():
+            proxy_config['url'] = self.proxy_url_var.get()
+        if self.proxy_username_var.get():
+            proxy_config['username'] = self.proxy_username_var.get()
+        if self.proxy_password_var.get():
+            proxy_config['password'] = self.proxy_password_var.get()
+        
+        if proxy_config:
+            advanced_config['proxy'] = proxy_config
+    
+    # Headers configuration
+    headers = {{}}
+    if hasattr(self, 'user_agent_var') and self.user_agent_var.get():
+        user_agent = self.user_agent_var.get()
+        if user_agent != "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36":
+            headers['User-Agent'] = user_agent
+    
+    if hasattr(self, 'custom_headers_text'):
+        try:
+            import json
+            custom_headers = json.loads(self.custom_headers_text.get('1.0', 'end-1c'))
+            headers.update(custom_headers)
+        except (json.JSONDecodeError, AttributeError):
+            pass
+    
+    if headers:
+        advanced_config['headers'] = headers
+    
+    # Validation settings
+    validation_config = {{}}
+    if hasattr(self, 'strict_validation_var') and not self.strict_validation_var.get():
+        validation_config['strict_validation'] = False
+    if hasattr(self, 'save_html_var') and self.save_html_var.get():
+        validation_config['save_html_responses'] = True
+    if hasattr(self, 'log_requests_var') and self.log_requests_var.get():
+        validation_config['log_http_requests'] = True
+    
+    if validation_config:
+        advanced_config['validation'] = validation_config
+    
+    config_params = {{
+        'client_id': "{client_id}",
+        'client_name': "{client_name}",
+        'description': "{description}",
+        'base_url': "{base_url}",
+        'search_endpoint': "{search_endpoint}",
+        'search_param_name': "{search_param}",
+        'product_link_selector': "{product_selector}",
+        'field_mappings': field_mappings,
+        'part_number_regex': r'^[\\w\\-/\\.]{{1,64}}$',
+        'normalize_part_number': {str(self.normalize_parts_var.get())},
+        'exact_match_required': {str(self.exact_match_var.get())},
+        'output_columns': output_columns
+    }}
+    
+    # Add advanced configuration if present
+    if advanced_config:
+        config_params['advanced_config'] = advanced_config
+    
+    return ClientConfig(**config_params)
 
 
 def {register_func_name}():
