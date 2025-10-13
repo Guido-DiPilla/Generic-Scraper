@@ -75,13 +75,16 @@ def get_config() -> ScraperConfig:
     verify_ssl_env = os.getenv("VERIFY_SSL", "true").strip().lower()
     verify_ssl: bool = verify_ssl_env in {"1", "true", "yes", "on"}
 
-    # Validation - proxy is optional, allow running without it
-    # If proxy credentials are missing, set proxy_url to None to disable proxy usage
+    # Proxy validation - use proxy by default when credentials are available
+    # If proxy credentials are missing, disable proxy usage with warning
     if not proxy_username or not proxy_password:
         proxy_url = ""  # Empty proxy URL disables proxy usage
         print("Warning: Running without proxy (PROXY_USERNAME/PROXY_PASSWORD not set)")
+    else:
+        # Proxy credentials found - enable proxy by default
+        print(f"Proxy enabled: {proxy_host}")
     
-    # Uncomment below to make proxy mandatory again:
+    # For mandatory proxy mode (uncomment if needed):
     # missing = []
     # if not proxy_username:
     #     missing.append("PROXY_USERNAME")

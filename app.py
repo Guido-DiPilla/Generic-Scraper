@@ -114,13 +114,14 @@ def main(
                     
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
 
-    # Proxy connectivity test (only if proxy is configured)
+    # Proxy connectivity test - run when proxy is configured
     import aiohttp
     async def proxy_test() -> None:
         if not config.proxy_username or not config.proxy_password:
-            console.print("[yellow]Skipping proxy test - no proxy configured[/yellow]")
+            console.print("[yellow]Skipping proxy test - no proxy credentials configured[/yellow]")
             return
             
+        console.print(f"[cyan]Testing proxy connection: {config.proxy_host}[/cyan]")
         test_url = "https://ipapi.co/json/"  # HTTPS to avoid plaintext
         import random as _random
         attempts = 3
@@ -136,7 +137,32 @@ def main(
                     async with session.get(test_url, proxy=proxy, proxy_auth=proxy_auth) as resp:
                         if resp.status == 200:
                             data = await resp.json()
-                            console.print(f"[green]Proxy test successful. Details:[/green] {data}")
+                            console.print("[green]✅ Proxy test successful![/green]")
+                            
+                            # Display comprehensive proxy information
+                            console.print("[cyan]Proxy Connection Details:[/cyan]")
+                            console.print(f"  🌐 External IP: [bold blue]{data.get('ip', 'unknown')}[/bold blue]")
+                            console.print(f"  📍 Location: [yellow]{data.get('city', 'unknown')}, {data.get('region', 'unknown')}, {data.get('country_name', 'unknown')}[/yellow]")
+                            console.print(f"  🏢 ISP: [magenta]{data.get('org', 'unknown')}[/magenta]")
+                            console.print(f"  🌍 Country Code: [green]{data.get('country_code', 'unknown')}[/green]")
+                            console.print(f"  ⏰ Timezone: [cyan]{data.get('timezone', 'unknown')}[/cyan]")
+                            
+                            # Show additional fields if available
+                            if data.get('postal'):
+                                console.print(f"  📮 Postal Code: [dim]{data.get('postal')}[/dim]")
+                            if data.get('latitude') and data.get('longitude'):
+                                console.print(f"  🗺️  Coordinates: [dim]{data.get('latitude')}, {data.get('longitude')}[/dim]")
+                            
+                            # Create a compact summary of key fields
+                            key_fields = {
+                                'ip': data.get('ip'),
+                                'city': data.get('city'),
+                                'region': data.get('region'),
+                                'country': data.get('country_name'),
+                                'isp': data.get('org'),
+                                'timezone': data.get('timezone')
+                            }
+                            console.print(f"[dim]Summary: {' | '.join([f'{k}={v}' for k, v in key_fields.items() if v])}[/dim]")
                             return
                         last_err = f"HTTP status: {resp.status}"
                         raise RuntimeError(last_err)
@@ -146,9 +172,11 @@ def main(
                 if attempt < attempts - 1:
                     # Exponential backoff with jitter: 1s, 2s, ...
                     delay = (2 ** attempt) + _random.uniform(0, 0.5)
+                    console.print(f"[yellow]Proxy test attempt {attempt + 1} failed, retrying in {delay:.1f}s...[/yellow]")
                     await asyncio.sleep(delay)
                     continue
-            console.print(f"[red]Proxy test failed after {attempts} attempts: {last_err}[/red]")
+            console.print(f"[red]❌ Proxy test failed after {attempts} attempts: {last_err}[/red]")
+            console.print("[yellow]⚠️  Scraping may fail without working proxy. Check your proxy credentials.[/yellow]")
     asyncio.run(proxy_test())
 
     setup_logging(config.log_file, config.log_level)
@@ -276,9 +304,9 @@ def main(
             if config.proxy_username and config.proxy_password and config.proxy_url:
                 proxy_auth = _aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
                 proxy_url_to_use = config.proxy_url
-                console.print(f"[cyan]Using proxy: {config.proxy_host}[/cyan]")
+                console.print(f"[green]🔗 Using proxy: {config.proxy_host} (authenticated)[/green]")
             else:
-                console.print("[yellow]Running without proxy[/yellow]")
+                console.print("[yellow]⚠️  Running without proxy - direct connection[/yellow]")
             # Add timeout to prevent hanging connections (30s total, 10s connect)
             timeout = _aiohttp.ClientTimeout(total=30, connect=10)
             async with _aiohttp.ClientSession(connector=connector, timeout=timeout) as session:

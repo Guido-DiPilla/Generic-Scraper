@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
 from pathlib import Path
 import re
+import os
 from typing import Dict, List, Optional
 import json
 
@@ -238,7 +239,7 @@ class ClientGeneratorGUI:
             height=15,  # Increased height for better visibility
             wrap='word',
             bg='#000000',  # Black background
-            fg='#00FF00',  # Green text (classic terminal)
+            fg='#FFFFFF',  # White text (default for unstyled text)
             insertbackground='#00FF00',  # Green cursor
             selectbackground='#333333',  # Dark selection
             selectforeground='#FFFFFF',  # White selected text
@@ -434,7 +435,7 @@ class ClientGeneratorGUI:
         proxy_frame.pack(fill='x', padx=20, pady=10)
         
         # Add instruction label
-        instruction_label = ttk.Label(proxy_frame, text="Default proxy settings are pre-filled but can be edited for different clients:", 
+        instruction_label = ttk.Label(proxy_frame, text="Proxy is enabled by default with credentials from environment variables:", 
                                     font=('Arial', 9), foreground='gray')
         instruction_label.pack(anchor='w', padx=5, pady=(5, 0))
         
@@ -448,15 +449,15 @@ class ClientGeneratorGUI:
         self.proxy_fields_frame.pack(fill='x', padx=20, pady=5)
         
         ttk.Label(self.proxy_fields_frame, text="Proxy URL:").grid(row=0, column=0, sticky='w', pady=5)
-        self.proxy_url_var = tk.StringVar(value="rp.proxyscrape.com:6060")
+        self.proxy_url_var = tk.StringVar(value=os.getenv("PROXY_HOST", "rp.proxyscrape.com:6060"))
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_url_var, width=40).grid(row=0, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Username:").grid(row=1, column=0, sticky='w', pady=5)
-        self.proxy_username_var = tk.StringVar(value="ukxv6pnb5wervp3")
+        self.proxy_username_var = tk.StringVar(value=os.getenv("PROXY_USERNAME", ""))
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_username_var, width=40).grid(row=1, column=1, sticky='w', padx=5)
         
         ttk.Label(self.proxy_fields_frame, text="Password:").grid(row=2, column=0, sticky='w', pady=5)
-        self.proxy_password_var = tk.StringVar(value="eww7ejd4luzk3vn")
+        self.proxy_password_var = tk.StringVar(value=os.getenv("PROXY_PASSWORD", ""))
         ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_password_var, width=40, show='*').grid(row=2, column=1, sticky='w', padx=5)
         
         # Headers Section
@@ -1182,16 +1183,25 @@ def {register_func_name}():
         
         # Configure tags for each color
         for tag, color in color_mapping.items():
-            self.log_text.tag_configure(tag, foreground=color)
+            if tag == 'bold':
+                # Configure bold with both color and font
+                self.log_text.tag_configure(tag, foreground=color, font=('Consolas', 9, 'bold'))
+            else:
+                self.log_text.tag_configure(tag, foreground=color)
         
         # Special tags for formatting
-        self.log_text.tag_configure('bold', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('underline', underline=True)
         self.log_text.tag_configure('progress_bar', background='#1a1a1a', foreground='#00FF41')
         self.log_text.tag_configure('success', foreground='#00FF41', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('error', foreground='#FF4444', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('warning', foreground='#FFAA00', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('info', foreground='#44AAFF')
+        
+        # Bold color combinations for Rich markup
+        self.log_text.tag_configure('bold_green', foreground='#00FF00', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('bold_blue', foreground='#5555FF', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('bold_red', foreground='#FF5555', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('bold_yellow', foreground='#FFFF55', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('table_header', foreground='#00FFFF', font=('Consolas', 9, 'bold'))
         self.log_text.tag_configure('table_row', foreground='#CCCCCC')
         self.log_text.tag_configure('black', foreground='#000000')
@@ -1213,6 +1223,86 @@ def {register_func_name}():
         
         self.log_text.see(tk.END)
         self.root.update_idletasks()
+
+    def parse_ansi_codes(self, text):
+        """Parse ANSI escape sequences and return segments with styling."""
+        import re
+        
+        # ANSI color code mappings
+        ansi_color_map = {
+            '30': 'black', '31': 'red', '32': 'green', '33': 'yellow',
+            '34': 'blue', '35': 'magenta', '36': 'cyan', '37': 'white',
+            '90': 'bright_black', '91': 'bright_red', '92': 'bright_green', '93': 'bright_yellow',
+            '94': 'bright_blue', '95': 'bright_magenta', '96': 'bright_cyan', '97': 'bright_white'
+        }
+        
+        segments = []
+        current_text = text
+        current_styles = []
+        
+        # Pattern to match all ANSI escape sequences
+        ansi_pattern = re.compile(r'\033\[([0-9;?]*)([mABCDEFGHJKSThlf])')
+        
+        while current_text:
+            match = ansi_pattern.search(current_text)
+            if match:
+                # Add text before the ANSI code
+                if match.start() > 0:
+                    text_segment = current_text[:match.start()]
+                    if text_segment:
+                        segments.append((text_segment, current_styles.copy()))
+                
+                # Only process color codes (ending with 'm')
+                if match.group(2) == 'm':
+                    codes = match.group(1).split(';') if match.group(1) else ['0']
+                    i = 0
+                    while i < len(codes):
+                        code = codes[i]
+                        if code == '0' or code == '':  # Reset
+                            current_styles = []
+                        elif code == '1':  # Bold
+                            if 'bold' not in current_styles:
+                                current_styles.append('bold')
+                        elif code == '38' and i + 2 < len(codes) and codes[i + 1] == '2':
+                            # 24-bit RGB color: 38;2;r;g;b
+                            if i + 4 < len(codes):
+                                r, g, b = int(codes[i + 2]), int(codes[i + 3]), int(codes[i + 4])
+                                # Map common Rich colors to our color scheme
+                                if (r, g, b) == (249, 38, 114):  # Rich pink/magenta for progress bars
+                                    current_styles = [s for s in current_styles if not s.endswith('_bar')]
+                                    current_styles.append('magenta')
+                                elif r > 200 and g < 100 and b < 100:  # Reddish
+                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    current_styles.append('red')
+                                elif r < 100 and g > 200 and b < 100:  # Greenish
+                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    current_styles.append('green')
+                                elif r < 100 and g < 100 and b > 200:  # Blueish
+                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    current_styles.append('blue')
+                                elif r > 200 and g > 200 and b < 100:  # Yellowish
+                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    current_styles.append('yellow')
+                                elif r < 150 and g > 200 and b > 200:  # Cyanish
+                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    current_styles.append('cyan')
+                                i += 4  # Skip the RGB values
+                            else:
+                                i += 2
+                        elif code in ansi_color_map:  # Standard color
+                            # Remove other colors first
+                            current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                            current_styles.append(ansi_color_map[code])
+                        i += 1
+                
+                current_text = current_text[match.end():]
+            else:
+                # No more ANSI codes, add remaining text
+                if current_text:
+                    segments.append((current_text, current_styles.copy()))
+                break
+        
+        return segments
 
     def strip_ansi_codes(self, text):
         """Remove all ANSI escape sequences from text."""
@@ -1251,34 +1341,210 @@ def {register_func_name}():
             
         return True
 
-    def log_rich_output(self, text):
-        """Parse and display Rich-formatted text with colors and formatting, matching CLI output."""
-        # Clean the text first
-        clean_text = self.strip_ansi_codes(text)
+    def parse_rich_markup(self, text):
+        """Parse Rich-style markup and return segments with styling."""
+        import re
         
+        # Rich markup patterns
+        patterns = {
+            r'\[green\](.*?)\[/green\]': ('green', r'\1'),
+            r'\[red\](.*?)\[/red\]': ('red', r'\1'),
+            r'\[yellow\](.*?)\[/yellow\]': ('yellow', r'\1'),
+            r'\[cyan\](.*?)\[/cyan\]': ('cyan', r'\1'),
+            r'\[blue\](.*?)\[/blue\]': ('blue', r'\1'),
+            r'\[magenta\](.*?)\[/magenta\]': ('magenta', r'\1'),
+            r'\[bold\](.*?)\[/bold\]': ('bold', r'\1'),
+            r'\[dim\](.*?)\[/dim\]': ('dim', r'\1'),
+            r'\[bold blue\](.*?)\[/bold blue\]': ('bold_blue', r'\1'),
+            r'\[bold green\](.*?)\[/bold green\]': ('bold_green', r'\1'),
+            r'\[bright_green\](.*?)\[/bright_green\]': ('bright_green', r'\1'),
+            r'\[bright_red\](.*?)\[/bright_red\]': ('bright_red', r'\1'),
+            r'\[bright_yellow\](.*?)\[/bright_yellow\]': ('bright_yellow', r'\1'),
+        }
+        
+        segments = []
+        current_text = text
+        
+        while current_text:
+            earliest_match = None
+            earliest_pos = len(current_text)
+            
+            # Find the earliest pattern match
+            for pattern, (style, replacement) in patterns.items():
+                match = re.search(pattern, current_text)
+                if match and match.start() < earliest_pos:
+                    earliest_match = (match, style, replacement)
+                    earliest_pos = match.start()
+            
+            if earliest_match:
+                match, style, replacement = earliest_match
+                
+                # Add text before the match
+                if match.start() > 0:
+                    segments.append((current_text[:match.start()], None))
+                
+                # Add the styled text
+                styled_text = re.sub(match.re.pattern, replacement, match.group(0))
+                segments.append((styled_text, style))
+                
+                # Continue with the rest
+                current_text = current_text[match.end():]
+            else:
+                # No more patterns, add remaining text
+                if current_text:
+                    segments.append((current_text, None))
+                break
+        
+        return segments
+
+    def log_rich_output(self, text):
+        """Parse and display Rich-formatted text with colors and formatting."""
         # Skip lines that shouldn't be displayed
         if not self.should_display_line(text):
             return
-            
-        # Detect and style important content
-        if any(indicator in clean_text for indicator in ["✅", "Success", "Processed:"]):
-            self.insert_styled_text(clean_text, 'success')
-        elif any(indicator in clean_text for indicator in ["❌", "Error", "Failed"]):
-            self.insert_styled_text(clean_text, 'error')
-        elif any(indicator in clean_text for indicator in ["⚠️", "Warning"]):
-            self.insert_styled_text(clean_text, 'warning')
-        elif "│" in clean_text or "┌" in clean_text or "├" in clean_text or "└" in clean_text:
-            # Table content - cyan styling
-            self.insert_styled_text(clean_text, 'cyan')
-        elif "━━━" in clean_text:
-            # Separators
-            self.insert_styled_text(clean_text, 'dim')
+        
+        # First try to parse ANSI codes (which is what Rich actually outputs)
+        ansi_segments = self.parse_ansi_codes(text)
+        
+        if ansi_segments and any(styles for _, styles in ansi_segments if styles):
+            # We found ANSI codes, use them
+            for segment_text, styles in ansi_segments:
+                if not segment_text:
+                    continue
+                
+                # Convert ANSI styles to GUI styles
+                gui_styles = []
+                has_bold = 'bold' in styles if styles else False
+                
+                for style in (styles or []):
+                    if style in ['green', 'red', 'yellow', 'cyan', 'blue', 'magenta', 'bright_green', 'bright_red', 'bright_yellow', 'bright_cyan', 'bright_blue', 'bright_magenta']:
+                        if has_bold:
+                            # Check if we have a bold variant
+                            bold_style = f'bold_{style}'
+                            if bold_style in ['bold_green', 'bold_blue', 'bold_red', 'bold_yellow']:
+                                gui_styles.append(bold_style)
+                            else:
+                                gui_styles.extend([style, 'bold'])
+                        else:
+                            gui_styles.append(style)
+                    elif style == 'bold' and not any(c in styles for c in ['green', 'red', 'yellow', 'cyan', 'blue', 'magenta']):
+                        gui_styles.append('bold')
+                
+                # If no specific styles, apply context-based styling
+                final_style = gui_styles if gui_styles else None
+                if not final_style:
+                    context_style = self.detect_content_style(segment_text)
+                    if context_style:
+                        final_style = [context_style]
+                
+                # Apply the style - convert single item list to single item
+                if isinstance(final_style, list) and len(final_style) == 1:
+                    final_style = final_style[0]
+                elif isinstance(final_style, list) and len(final_style) == 0:
+                    final_style = None
+                    
+                self.insert_styled_text(segment_text, final_style)
         else:
-            # Regular text
-            self.insert_styled_text(clean_text, None)
+            # Fallback to Rich markup parsing or smart styling
+            clean_text = self.strip_ansi_codes(text)
             
+            # Parse Rich markup and apply styling
+            segments = self.parse_rich_markup(clean_text)
+            
+            # If no segments were parsed, handle as plain text with smart styling
+            if not segments or (len(segments) == 1 and segments[0][1] is None):
+                self.handle_plain_text_with_smart_styling(clean_text)
+            else:
+                # Handle Rich markup segments
+                for segment_text, style in segments:
+                    if not segment_text:
+                        continue
+                        
+                    # Apply context-based styling if no specific style
+                    if style is None:
+                        style = self.detect_content_style(segment_text)
+                    
+                    self.insert_styled_text(segment_text, style)
+        
+        # Add newline
+        self.insert_styled_text('\n', None)
         self.log_text.see(tk.END)
         self.root.update_idletasks()
+
+    def detect_content_style(self, text):
+        """Detect appropriate style based on text content."""
+        if any(indicator in text for indicator in ["✅", "Success"]):
+            return 'success'
+        elif any(indicator in text for indicator in ["❌", "Error", "Failed"]):
+            return 'error'
+        elif any(indicator in text for indicator in ["⚠️", "Warning"]):
+            return 'warning'
+        elif "│" in text or "┌" in text or "├" in text or "└" in text:
+            return 'cyan'
+        elif "━━━" in text:
+            return 'dim'
+        elif text.startswith('  🌐') or text.startswith('  📍') or text.startswith('  🏢'):
+            return 'info'
+        elif text.startswith('Proxy test') or text.startswith('✅ Proxy test'):
+            return 'success'
+        elif 'External IP:' in text:
+            return 'bold_blue'
+        elif 'Location:' in text:
+            return 'yellow'
+        elif 'ISP:' in text:
+            return 'magenta'
+        elif 'Country Code:' in text:
+            return 'green'
+        elif 'Timezone:' in text:
+            return 'cyan'
+        return None
+
+    def handle_plain_text_with_smart_styling(self, text):
+        """Handle plain text with smart content-based styling."""
+        # Look for patterns in the text to apply appropriate styling
+        import re
+        
+        # Check if this is proxy test output and apply formatting
+        if 'External IP:' in text:
+            # Split and style different parts
+            parts = text.split('External IP:', 1)
+            if len(parts) == 2:
+                self.insert_styled_text(parts[0] + 'External IP: ', 'info')
+                ip_part = parts[1].strip()
+                self.insert_styled_text(ip_part, 'bold_blue')
+                return
+        elif 'Location:' in text:
+            parts = text.split('Location:', 1)
+            if len(parts) == 2:
+                self.insert_styled_text(parts[0] + 'Location: ', 'info')
+                location_part = parts[1].strip()
+                self.insert_styled_text(location_part, 'yellow')
+                return
+        elif 'ISP:' in text:
+            parts = text.split('ISP:', 1)
+            if len(parts) == 2:
+                self.insert_styled_text(parts[0] + 'ISP: ', 'info')
+                isp_part = parts[1].strip()
+                self.insert_styled_text(isp_part, 'magenta')
+                return
+        elif 'Country Code:' in text:
+            parts = text.split('Country Code:', 1)
+            if len(parts) == 2:
+                self.insert_styled_text(parts[0] + 'Country Code: ', 'info')
+                country_part = parts[1].strip()
+                self.insert_styled_text(country_part, 'green')
+                return
+        elif 'Timezone:' in text:
+            parts = text.split('Timezone:', 1)
+            if len(parts) == 2:
+                self.insert_styled_text(parts[0] + 'Timezone: ', 'info')
+                timezone_part = parts[1].strip()
+                self.insert_styled_text(timezone_part, 'cyan')
+                return
+        
+        # Apply general content-based styling
+        style = self.detect_content_style(text)
+        self.insert_styled_text(text, style)
 
     def parse_and_insert_ansi(self, text, ansi_codes):
         """Parse ANSI codes and insert formatted text."""
@@ -1300,15 +1566,17 @@ def {register_func_name}():
     
     def insert_styled_text(self, text, styles):
         """Insert text with given styles."""
-        start_pos = self.log_text.index(tk.END)
-        self.log_text.insert(tk.END, text)
+        if not text:  # Don't process empty text
+            return
         
         if styles:
-            end_pos = self.log_text.index(tk.END)
             if isinstance(styles, str):
                 styles = [styles]
-            for style in styles:
-                self.log_text.tag_add(style, start_pos, end_pos)
+            # Insert text with immediate style application
+            self.log_text.insert(tk.END, text, tuple(styles))
+        else:
+            # Insert text without styles
+            self.log_text.insert(tk.END, text)
 
     def add_terminal_welcome(self):
         """Add a terminal-like welcome message."""
@@ -1323,8 +1591,11 @@ Generic Scraper v2.0 - Terminal Interface
 > Progress bars, tables, and status updates will appear in real-time
 
 """
-        self.insert_styled_text(welcome_text, 'bright_green')
+        self.insert_styled_text(welcome_text, None)  # Use default white
         self.log_text.insert(tk.END, "─" * 68 + "\n\n")
+        
+
+        
         self.insert_styled_text("System: Ready to start scraping operations...\n", 'info')
     
     def clear_log(self):
@@ -1341,8 +1612,7 @@ Generic Scraper v2.0 - Terminal Interface
             folder = str(Path(self.output_file_var.get()).parent)
             
             if platform.system() == "Windows":
-                import os
-                os.startfile(folder)
+                subprocess.Popen(["explorer", folder])
             elif platform.system() == "Darwin":  # macOS
                 subprocess.Popen(["open", folder])
             else:  # Linux
