@@ -159,14 +159,21 @@ class ClientGeneratorGUI:
                                       values=client_names, state='readonly', width=50)
         client_dropdown.grid(row=0, column=1, sticky='w', padx=5, pady=5)
         
-        # Set G2S as default if available
+        # Bind client selection change to populate configuration
+        client_dropdown.bind('<<ComboboxSelected>>', self.on_client_selected)
+        
+        # Set G2S as default if available and load its configuration
         if client_names:
             for i, name in enumerate(client_names):
                 if 'g2s' in name.lower():
                     client_dropdown.current(i)
+                    # Load the default client configuration
+                    self.root.after(100, self.on_client_selected)  # Delay to ensure GUI is ready
                     break
             else:
                 client_dropdown.current(0)
+                # Load the first client configuration
+                self.root.after(100, self.on_client_selected)
         
         # File Selection Section
         files_frame = ttk.LabelFrame(parent, text="File Selection")
@@ -908,6 +915,82 @@ def {register_func_name}():
                 
             except Exception as e:
                 messagebox.showerror("Error", f"Error loading template: {str(e)}")
+    def on_client_selected(self, event=None):
+        """Handle client selection from dropdown - populate configuration fields."""
+        try:
+            from client_config import registry
+            
+            # Extract client ID from selection (format: "Client Name (client_id)")
+            client_selection = self.selected_client_var.get()
+            if not client_selection or '(' not in client_selection:
+                return
+                
+            client_id = client_selection.split('(')[-1].rstrip(')')
+            client_config = registry.get_client(client_id)
+            
+            if client_config:
+                # Populate basic information
+                if hasattr(self, 'client_id_var'):
+                    self.client_id_var.set(client_config.client_id)
+                if hasattr(self, 'client_name_var'):
+                    self.client_name_var.set(client_config.client_name)
+                if hasattr(self, 'description_var'):
+                    self.description_var.set(client_config.description or "")
+                
+                # Populate website configuration
+                if hasattr(self, 'base_url_var'):
+                    self.base_url_var.set(client_config.base_url)
+                if hasattr(self, 'search_endpoint_var'):
+                    self.search_endpoint_var.set(client_config.search_endpoint)
+                if hasattr(self, 'search_param_var'):
+                    self.search_param_var.set(client_config.search_param_name)
+                if hasattr(self, 'product_selector_var'):
+                    self.product_selector_var.set(client_config.product_link_selector)
+                
+                # Populate advanced settings  
+                if hasattr(self, 'normalize_parts_var'):
+                    self.normalize_parts_var.set(client_config.normalize_part_number)
+                if hasattr(self, 'exact_match_var'):
+                    self.exact_match_var.set(client_config.exact_match_required)
+                
+                # Clear and populate field mappings if available
+                if hasattr(self, 'field_mappings'):
+                    self.field_mappings.clear()
+                    for field_name, field_mapping in client_config.field_mappings.items():
+                        self.field_mappings.append({
+                            'name': field_name,
+                            'selector': field_mapping.css_selector or '',
+                            'attribute': field_mapping.attribute or '',
+                            'regex': field_mapping.regex_pattern or '',
+                            'default': field_mapping.default_value or 'Not found'
+                        })
+                
+                # Refresh field mappings display if we're on that tab
+                self.refresh_field_mappings_display()
+                
+                # Update status to show client is loaded
+                self.status_var.set(f"Client Loaded: {client_config.client_name}")
+                
+                # Show success message in log
+                self.log_message(f"✅ Loaded configuration for: {client_config.client_name}", 'success')
+                self.log_message(f"📋 {len(client_config.field_mappings)} field mappings loaded", 'info')
+                self.log_message(f"🌐 Base URL: {client_config.base_url}", 'info')
+                
+        except Exception as e:
+            self.log_message(f"❌ Error loading client configuration: {str(e)}", 'error')
+
+    def refresh_field_mappings_display(self):
+        """Refresh the field mappings display with loaded data."""
+        try:
+            # If we have a field mappings listbox, update it
+            if hasattr(self, 'mappings_listbox'):
+                self.mappings_listbox.delete(0, tk.END)
+                for i, mapping in enumerate(self.field_mappings):
+                    display_text = f"{mapping['name']} -> {mapping['selector'] or mapping['attribute'] or 'default'}"
+                    self.mappings_listbox.insert(tk.END, display_text)
+        except Exception as e:
+            print(f"Warning: Could not refresh field mappings display: {e}")
+
     def browse_input_file(self):
         """Browse for input CSV file."""
         filename = filedialog.askopenfilename(
@@ -982,19 +1065,21 @@ def {register_func_name}():
                 python_executable, "app.py",
                 "--client", client_id,
                 "--input-csv", self.input_file_var.get(),
-                "--output-csv", self.output_file_var.get(),
-                "--concurrency-limit", str(self.concurrency_var.get()),
-                "--chunksize", str(self.chunk_size_var.get())
+                "--output-csv", self.output_file_var.get()
             ]
-            
-            if self.email_notify_var.get():
-                cmd.append("--email-notify")
             
             self.log_message(f"Executing: {' '.join(cmd)}")
             
-            # Set environment to preserve Rich colors
+            # Set environment to preserve Rich colors and configure scraper settings
             env = os.environ.copy()
             env['FORCE_COLOR'] = '1'
+            
+            # Set concurrency and chunk size from GUI controls
+            env['CONCURRENCY_LIMIT'] = str(self.concurrency_var.get())
+            env['CHUNKSIZE'] = str(self.chunk_size_var.get())
+            
+            # Set email notification preference from GUI toggle
+            env['EMAIL_NOTIFICATIONS_ENABLED'] = str(self.email_notify_var.get()).lower()
             env['TERM'] = 'xterm-256color'
             
             # Run the scraping process
@@ -1011,24 +1096,9 @@ def {register_func_name}():
             # Read output line by line
             if process.stdout:
                 for line in process.stdout:
-                    if line:  # Don't strip to preserve formatting
-                        # Detect line type and apply appropriate styling
-                        if "✅" in line or "Success" in line:
-                            self.root.after(0, self.log_rich_output, line)
-                            self.root.after(0, self.log_message, "", "success")
-                        elif "❌" in line or "Error" in line or "Failed" in line:
-                            self.root.after(0, self.log_rich_output, line)
-                            self.root.after(0, self.log_message, "", "error")
-                        elif "⚠️" in line or "Warning" in line:
-                            self.root.after(0, self.log_rich_output, line)
-                            self.root.after(0, self.log_message, "", "warning")
-                        elif "Progress:" in line or "%" in line or "█" in line:
-                            # Progress bar - use special handling
-                            self.root.after(0, self.log_rich_output, line)
-                            self.root.after(0, self.update_progress_from_line, line)
-                        else:
-                            # Regular output with potential ANSI codes
-                            self.root.after(0, self.log_rich_output, line)
+                    if line.strip():  # Only process non-empty lines
+                        # Process all output through log_rich_output which will filter appropriately
+                        self.root.after(0, self.log_rich_output, line)
             
             # Wait for completion
             return_code = process.wait()
@@ -1144,48 +1214,68 @@ def {register_func_name}():
         self.log_text.see(tk.END)
         self.root.update_idletasks()
 
-    def log_rich_output(self, text):
-        """Parse and display Rich-formatted text with colors and formatting."""
+    def strip_ansi_codes(self, text):
+        """Remove all ANSI escape sequences from text."""
         import re
+        # Remove all ANSI escape sequences including:
+        # - Color codes: \033[...m
+        # - Cursor movement: \033[...A, \033[...B, etc.
+        # - Line clearing: \033[...K
+        # - Show/hide cursor: \033[?25l, \033[?25h
+        # - Any other escape sequences
+        ansi_escape = re.compile(r'\033\[[0-9;?]*[mABCDEFGHJKSThlf]')
+        # Also remove carriage returns and backspace sequences that mess up formatting
+        text = re.sub(r'\r+', '', text)  # Remove carriage returns
+        text = re.sub(r'\x08+', '', text)  # Remove backspaces
+        # Remove the ANSI sequences
+        clean_text = ansi_escape.sub('', text)
+        return clean_text
+    
+    def should_display_line(self, text):
+        """Determine if a line should be displayed based on content."""
+        clean_text = self.strip_ansi_codes(text).strip()
         
-        # Comprehensive ANSI color code parsing for Rich output
-        ansi_codes = {
-            # Basic colors
-            '\033[0m': None,           # Reset
-            '\033[1m': 'bold',         # Bold
-            '\033[4m': 'underline',    # Underline
-            '\033[30m': 'black',       # Black
-            '\033[31m': 'red',         # Red
-            '\033[32m': 'green',       # Green
-            '\033[33m': 'yellow',      # Yellow
-            '\033[34m': 'blue',        # Blue
-            '\033[35m': 'magenta',     # Magenta
-            '\033[36m': 'cyan',        # Cyan
-            '\033[37m': 'white',       # White
-            # Bright colors
-            '\033[90m': 'dim',         # Bright Black (Gray)
-            '\033[91m': 'bright_red',  # Bright Red
-            '\033[92m': 'bright_green', # Bright Green
-            '\033[93m': 'bright_yellow', # Bright Yellow
-            '\033[94m': 'bright_blue', # Bright Blue
-            '\033[95m': 'bright_magenta', # Bright Magenta
-            '\033[96m': 'bright_cyan', # Bright Cyan
-            '\033[97m': 'bright_white', # Bright White
-        }
+        # Skip empty lines
+        if not clean_text:
+            return False
+            
+        # Skip lines that are just progress bar updates (repeated progress with same percentage)
+        if clean_text.startswith('Overall ') and '━' in clean_text and '%' in clean_text:
+            return False
+        if clean_text.startswith('Chunk ') and '━' in clean_text and '%' in clean_text:
+            return False
+            
+        # Skip cursor control lines
+        if clean_text in ['', ' ']:
+            return False
+            
+        return True
+
+    def log_rich_output(self, text):
+        """Parse and display Rich-formatted text with colors and formatting, matching CLI output."""
+        # Clean the text first
+        clean_text = self.strip_ansi_codes(text)
         
-        # Handle special cases for Rich output
-        if "█" in text or "▓" in text or "░" in text:
-            # Progress bar - use special styling
-            self.insert_styled_text(text, 'progress_bar')
-        elif text.startswith("┌") or text.startswith("├") or text.startswith("└"):
-            # Table borders - cyan color
-            self.insert_styled_text(text, 'cyan')
-        elif "│" in text:
-            # Table content - preserve formatting
-            self.parse_and_insert_ansi(text, ansi_codes)
+        # Skip lines that shouldn't be displayed
+        if not self.should_display_line(text):
+            return
+            
+        # Detect and style important content
+        if any(indicator in clean_text for indicator in ["✅", "Success", "Processed:"]):
+            self.insert_styled_text(clean_text, 'success')
+        elif any(indicator in clean_text for indicator in ["❌", "Error", "Failed"]):
+            self.insert_styled_text(clean_text, 'error')
+        elif any(indicator in clean_text for indicator in ["⚠️", "Warning"]):
+            self.insert_styled_text(clean_text, 'warning')
+        elif "│" in clean_text or "┌" in clean_text or "├" in clean_text or "└" in clean_text:
+            # Table content - cyan styling
+            self.insert_styled_text(clean_text, 'cyan')
+        elif "━━━" in clean_text:
+            # Separators
+            self.insert_styled_text(clean_text, 'dim')
         else:
-            # Regular text with ANSI codes
-            self.parse_and_insert_ansi(text, ansi_codes)
+            # Regular text
+            self.insert_styled_text(clean_text, None)
             
         self.log_text.see(tk.END)
         self.root.update_idletasks()

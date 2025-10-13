@@ -114,36 +114,40 @@ def main(
                     
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
 
-    # Proxy connectivity test (use BasicAuth and proxy_host, not creds in URL)
+    # Proxy connectivity test (only if proxy is configured)
     import aiohttp
     async def proxy_test() -> None:
-            test_url = "https://ipapi.co/json/"  # HTTPS to avoid plaintext
-            import random as _random
-            attempts = 3
-            last_err: str | None = None
-            for attempt in range(attempts):
-                try:
-                    # Use None for default SSL context to satisfy mypy
-                    connector = aiohttp.TCPConnector(ssl=None if config.verify_ssl else False)
-                    timeout = aiohttp.ClientTimeout(total=10)
-                    proxy = f"http://{config.proxy_host}"  # no credentials in URL
-                    proxy_auth = aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
-                    async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
-                        async with session.get(test_url, proxy=proxy, proxy_auth=proxy_auth) as resp:
-                            if resp.status == 200:
-                                data = await resp.json()
-                                console.print(f"[green]Proxy test successful. Details:[/green] {data}")
-                                return
-                            last_err = f"HTTP status: {resp.status}"
-                            raise RuntimeError(last_err)
-                except Exception as e:
-                    safe = mask_secrets(str(e))
-                    last_err = safe if safe else e.__class__.__name__
-                    if attempt < attempts - 1:
-                        # Exponential backoff with jitter: 1s, 2s, ...
-                        delay = (2 ** attempt) + _random.uniform(0, 0.5)
-                        await asyncio.sleep(delay)
-                        continue
+        if not config.proxy_username or not config.proxy_password:
+            console.print("[yellow]Skipping proxy test - no proxy configured[/yellow]")
+            return
+            
+        test_url = "https://ipapi.co/json/"  # HTTPS to avoid plaintext
+        import random as _random
+        attempts = 3
+        last_err: str | None = None
+        for attempt in range(attempts):
+            try:
+                # Use None for default SSL context to satisfy mypy
+                connector = aiohttp.TCPConnector(ssl=None if config.verify_ssl else False)
+                timeout = aiohttp.ClientTimeout(total=10)
+                proxy = f"http://{config.proxy_host}"  # no credentials in URL
+                proxy_auth = aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
+                async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+                    async with session.get(test_url, proxy=proxy, proxy_auth=proxy_auth) as resp:
+                        if resp.status == 200:
+                            data = await resp.json()
+                            console.print(f"[green]Proxy test successful. Details:[/green] {data}")
+                            return
+                        last_err = f"HTTP status: {resp.status}"
+                        raise RuntimeError(last_err)
+            except Exception as e:
+                safe = mask_secrets(str(e))
+                last_err = safe if safe else e.__class__.__name__
+                if attempt < attempts - 1:
+                    # Exponential backoff with jitter: 1s, 2s, ...
+                    delay = (2 ** attempt) + _random.uniform(0, 0.5)
+                    await asyncio.sleep(delay)
+                    continue
             console.print(f"[red]Proxy test failed after {attempts} attempts: {last_err}[/red]")
     asyncio.run(proxy_test())
 
@@ -266,8 +270,15 @@ def main(
             import aiohttp as _aiohttp
             # Use None for default SSL context to satisfy mypy
             connector = _aiohttp.TCPConnector(ssl=None if config.verify_ssl else False)
-            # Create proxy auth with required credentials
-            proxy_auth = _aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
+            # Create proxy auth only if proxy credentials are available
+            proxy_auth = None
+            proxy_url_to_use = None
+            if config.proxy_username and config.proxy_password and config.proxy_url:
+                proxy_auth = _aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
+                proxy_url_to_use = config.proxy_url
+                console.print(f"[cyan]Using proxy: {config.proxy_host}[/cyan]")
+            else:
+                console.print("[yellow]Running without proxy[/yellow]")
             # Add timeout to prevent hanging connections (30s total, 10s connect)
             timeout = _aiohttp.ClientTimeout(total=30, connect=10)
             async with _aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
@@ -307,7 +318,7 @@ def main(
                                 pn,
                                 client_config,
                                 semaphore,
-                                proxy_url=config.proxy_url,
+                                proxy_url=proxy_url_to_use,
                                 proxy_auth=proxy_auth,
                                 request_delay_s=config.request_delay_s,
                             )
@@ -459,13 +470,15 @@ def main(
                 status = mask_secrets(str(r.get("Status", "")))
                 console.print(f"  [bold blue]{pn}[/bold blue]: {status}")
         try:
-            if not dry_run:
+            if not dry_run and config.email_notifications_enabled:
                 send_email(
                     subject="Generic Scraper - Process Completed",
                     body=safe_summary,
                     to=config.email_notify_to
                 )
                 console.print("[green]Notification email sent.[/green]")
+            elif not dry_run and not config.email_notifications_enabled:
+                console.print("[dim]Email notifications disabled.[/dim]")
         except Exception as e:
             safe_msg = mask_secrets(str(e))
             console.print(f"[yellow]Failed to send notification email: {safe_msg}[/yellow]")

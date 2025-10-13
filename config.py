@@ -34,6 +34,7 @@ class ScraperConfig:
     log_file: Path
     log_level: str
     email_notify_to: str
+    email_notifications_enabled: bool
     request_delay_s: float
     verify_ssl: bool
 
@@ -61,6 +62,7 @@ def get_config() -> ScraperConfig:
     log_file: Path = Path(os.getenv("LOG_FILE", "modern_refactored.log"))
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     email_notify_to: str = os.getenv("EMAIL_NOTIFY_TO", proxy_username)
+    email_notifications_enabled: bool = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "true").lower() in ["true", "1", "yes", "on"]
     # Polite per-request delay in milliseconds (default 150ms) - required to avoid bot detection
     try:
         request_delay_ms_env = os.getenv("REQUEST_DELAY_MS", "150")
@@ -73,17 +75,20 @@ def get_config() -> ScraperConfig:
     verify_ssl_env = os.getenv("VERIFY_SSL", "true").strip().lower()
     verify_ssl: bool = verify_ssl_env in {"1", "true", "yes", "on"}
 
-    # Validation
-    missing = []
-    if not proxy_username:
-        missing.append("PROXY_USERNAME")
-    if not proxy_password:
-        missing.append("PROXY_PASSWORD")
-    if missing:
-        # Never log secrets or missing secret names
-        raise ValueError(
-            f"Missing required environment variables: {', '.join(missing)}"
-        )
+    # Validation - proxy is optional, allow running without it
+    # If proxy credentials are missing, set proxy_url to None to disable proxy usage
+    if not proxy_username or not proxy_password:
+        proxy_url = ""  # Empty proxy URL disables proxy usage
+        print("Warning: Running without proxy (PROXY_USERNAME/PROXY_PASSWORD not set)")
+    
+    # Uncomment below to make proxy mandatory again:
+    # missing = []
+    # if not proxy_username:
+    #     missing.append("PROXY_USERNAME")
+    # if not proxy_password:
+    #     missing.append("PROXY_PASSWORD")
+    # if missing:
+    #     raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
     return ScraperConfig(
         concurrency_limit=concurrency_limit,
@@ -96,6 +101,7 @@ def get_config() -> ScraperConfig:
         log_file=log_file,
         log_level=log_level,
         email_notify_to=email_notify_to,
+        email_notifications_enabled=email_notifications_enabled,
         request_delay_s=request_delay_s,
         verify_ssl=verify_ssl,
     )
