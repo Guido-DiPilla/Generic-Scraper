@@ -32,6 +32,7 @@ try:  # Prefer package-relative imports
     from .ui import console, select_file
     from .client_config import registry
     from . import clients  # This registers all available clients
+    from . import G2S     # This registers G2S client from separate folder
 except ImportError:  # Fallback for direct script execution
     from config import get_config
     from email_utils import send_email
@@ -47,6 +48,7 @@ except ImportError:  # Fallback for direct script execution
     from ui import console, select_file
     from client_config import registry
     import clients  # This registers all available clients
+    import G2S     # This registers G2S client from separate folder
 
 app = typer.Typer()
 

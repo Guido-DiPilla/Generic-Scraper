@@ -333,10 +333,10 @@ async def process_part_number(
     if client_config is None:
         # Import and use G2S config as default for backward compatibility
         try:
-            from .clients.g2s_client import create_g2s_config
+            from .G2S.g2s_client import create_g2s_config
             client_config = create_g2s_config()
         except ImportError:
-            from clients.g2s_client import create_g2s_config
+            from G2S.g2s_client import create_g2s_config
             client_config = create_g2s_config()
     
     return await process_part_number_generic(

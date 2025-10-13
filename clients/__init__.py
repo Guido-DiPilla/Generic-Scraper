@@ -5,7 +5,7 @@ Contains client-specific configurations for different websites.
 
 # Import and register all available clients
 try:
-    from .g2s_client import register_g2s_client
+    # G2S client is now in separate G2S folder
     from .demo_client import register_demo_client
     from .electronics_supplier import register_electronics_supplier
     from .test_supplier import register_test_supplier
@@ -13,7 +13,6 @@ try:
     # Add your new clients here:
     # from .my_new_client import register_my_client
     
-    register_g2s_client()
     register_demo_client()
     register_electronics_supplier()
     register_test_supplier()
