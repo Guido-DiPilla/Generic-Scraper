@@ -260,6 +260,6 @@ async def process_part_number(
 if __name__ == "__main__":
     print("This module contains scraping functions and is not meant to be run directly.")
     print("To run the scraper, use:")
-    print("  python generic_scrape.py")
+    print("  python app.py")
     print("Or run as a module:")
     print("  python -m modern_refactored.refactored")

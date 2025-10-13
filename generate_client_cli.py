@@ -279,7 +279,7 @@ def main():
         print(f"📁 File created: {client_file}")
         print(f"🎯 The client will appear in the scraper menu next time you run it.")
         print(f"\n🚀 To test your new client:")
-        print(f"   ./venv/bin/python generic_scrape.py --client {client_id}")
+        print(f"   ./venv/bin/python app.py --client {client_id}")
         
     except Exception as e:
         print(f"❌ Error generating client: {str(e)}")

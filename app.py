@@ -1,7 +1,7 @@
 """Main entry point for the Generic Multi-Client Web Scraper.
 
-Supports running both as a module (python -m generic_scraper.generic_scrape)
-and directly as a script (python generic_scraper/generic_scrape.py).
+Supports running both as a module (python -m generic_scraper.app)
+and directly as a script (python generic_scraper/app.py).
 """
 
 import asyncio

@@ -88,7 +88,7 @@ EMAIL_NOTIFY_TO=notifications@example.com
 ### **Interactive Mode (Recommended)**
 ```bash
 # Run with client selection menu
-./venv/bin/python generic_scrape.py
+./venv/bin/python app.py
 
 # Output:
 # Available Scraping Clients:
@@ -101,10 +101,10 @@ EMAIL_NOTIFY_TO=notifications@example.com
 ### **Direct Client Selection**
 ```bash
 # Run specific client directly
-./venv/bin/python generic_scrape.py --client g2s --input-csv parts.csv --output-csv results.csv
+./venv/bin/python app.py --client g2s --input-csv parts.csv --output-csv results.csv
 
 # With all options
-./venv/bin/python generic_scrape.py \
+./venv/bin/python app.py \
   --client g2s \
   --input-csv input/parts.csv \
   --output-csv output/results.csv \
@@ -149,7 +149,7 @@ The framework provides **three methods** for adding new scraping clients:
 ## 🏗️ Architecture Overview
 
 ### Core Components
-- **`generic_scrape.py`**: Main entry point with client selection, processing loop, progress tracking
+- **`app.py`**: Main entry point with client selection, processing loop, progress tracking
 - **`generic_scraper.py`**: Generic async scraping engine that works with any client config
 - **`client_config.py`**: Client configuration system and field mapping definitions
 - **`clients/`**: Directory containing individual client configurations
@@ -219,13 +219,13 @@ EMAIL_NOTIFY_TO=your@email.com
 ### 1. Run the scraper
 ```bash
 # Interactive mode - will prompt for client and files
-python generic_scrape.py
+python app.py
 
 # Or specify client directly
-python generic_scrape.py --client g2s
+python app.py --client g2s
 
 # With all options
-python generic_scrape.py --client g2s --input-csv parts.csv --output-csv results.csv
+python app.py --client g2s --input-csv parts.csv --output-csv results.csv
 ```
 
 ### 2. Client Selection
@@ -313,7 +313,7 @@ EMAIL_NOTIFY_TO=your@email.com
 ## Architecture Overview
 
 - Quick “what does what” cheatsheet:
-  - `generic_scrape.py`: Main entry; wires config, logging, proxy test, processing loop, saving, summary, email.
+  - `app.py`: Main entry; wires config, logging, proxy test, processing loop, saving, summary, email.
   - `__main__.py`: Lets you run with `python -m modern_refactored`.
   - `config.py`: Loads and validates config from `.env` (concurrency, proxy, logging, email, etc.).
   - `scraper.py`: Async HTTP + HTML parsing for each part number; returns a result dict per item.
