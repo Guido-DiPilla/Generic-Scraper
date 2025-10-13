@@ -35,7 +35,7 @@ You now have TWO ways to add new scraping clients:
    • Your new client appears instantly in the scraper menu!
 
 🎯 After Creating a Client:
-   • Test it: ./venv/bin/python refactored.py --client your_client_id
+   • Test it: ./venv/bin/python generic_scrape.py --client your_client_id
    • It appears in the interactive menu automatically
    • All the same features: proxy, progress, resume, etc.
 

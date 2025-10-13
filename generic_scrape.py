@@ -1,7 +1,7 @@
-"""Main entry point for the Modern Refactored G2S Scraper.
+"""Main entry point for the Generic Multi-Client Web Scraper.
 
-Supports running both as a module (python -m modern_refactored.refactored)
-and directly as a script (python modern_refactored/refactored.py).
+Supports running both as a module (python -m generic_scraper.generic_scrape)
+and directly as a script (python generic_scraper/generic_scrape.py).
 """
 
 import asyncio
@@ -148,7 +148,7 @@ def main(
     asyncio.run(proxy_test())
 
     setup_logging(config.log_file, config.log_level)
-    console.print("[bold cyan]Modern Refactored G2S Product/Inventory Scraper[/bold cyan]")
+    console.print("[bold cyan]Generic Multi-Client Web Scraper[/bold cyan]")
 
     # Use CLI args if provided, else prompt interactively
     if input_csv is None:
@@ -461,7 +461,7 @@ def main(
         try:
             if not dry_run:
                 send_email(
-                    subject="Modern Refactored Scrape Completed",
+                    subject="Generic Scraper - Process Completed",
                     body=safe_summary,
                     to=config.email_notify_to
                 )

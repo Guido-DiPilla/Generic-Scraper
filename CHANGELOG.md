@@ -49,7 +49,7 @@ This release represents a complete architectural transformation from a single-pu
 ### 🔄 **Changed**
 
 #### **Core Architecture**
-- **Refactored main script** (`refactored.py`) to support client selection
+- **Refactored main script** (`generic_scrape.py`) to support client selection
 - **Abstracted scraping logic** from G2S-specific to generic implementation
 - **Enhanced configuration system** to support multiple client types
 - **Updated import structure** to support modular client loading
@@ -113,7 +113,7 @@ clients/                      # Client configurations directory
 
 #### **Modified Files**
 ```
-refactored.py                # Enhanced with client selection
+generic_scrape.py            # Enhanced with client selection
 config.py                    # Updated for generic configurations
 io_utils.py                  # Enhanced for dynamic schemas
 README.md                    # Comprehensive rewrite
@@ -129,7 +129,7 @@ __main__.py                  # Updated imports
 
 #### **For Existing G2S Users**
 - **No changes required** - G2S functionality is preserved
-- **Run normally**: `./venv/bin/python refactored.py --client g2s`
+- **Run normally**: `./venv/bin/python generic_scrape.py --client g2s`
 - **Interactive mode**: Select option 1 (G2S Equipment) from menu
 
 #### **For Developers**
@@ -142,12 +142,12 @@ __main__.py                  # Updated imports
 #### **Multi-Client Selection**
 ```bash
 # Interactive client selection
-./venv/bin/python refactored.py
+./venv/bin/python generic_scrape.py
 
 # Direct client selection
-./venv/bin/python refactored.py --client g2s
-./venv/bin/python refactored.py --client demo
-./venv/bin/python refactored.py --client electronics_supplier
+./venv/bin/python generic_scrape.py --client g2s
+./venv/bin/python generic_scrape.py --client demo
+./venv/bin/python generic_scrape.py --client electronics_supplier
 ```
 
 #### **Creating New Clients**
