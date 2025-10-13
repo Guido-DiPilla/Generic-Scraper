@@ -1100,6 +1100,8 @@ def {register_func_name}():
                     if line.strip():  # Only process non-empty lines
                         # Process all output through log_rich_output which will filter appropriately
                         self.root.after(0, self.log_rich_output, line)
+                        # Also update progress bar in real-time
+                        self.root.after(0, self.update_progress_from_line, line)
             
             # Wait for completion
             return_code = process.wait()
@@ -1149,14 +1151,35 @@ def {register_func_name}():
     def update_progress_from_line(self, line):
         """Update progress bar from log line."""
         try:
-            # Try to extract percentage from line
             import re
+            
+            # Extract percentage from progress indicators
             match = re.search(r'(\d+)%', line)
             if match:
                 percentage = int(match.group(1))
                 self.progress_var.set(percentage)
                 self.progress_text_var.set(f"Progress: {percentage}%")
-        except:
+                return
+            
+            # Look for item count indicators like "[1/100]" or "Processed: 25/100"
+            count_match = re.search(r'\[(\d+)/(\d+)\]', line)
+            if count_match:
+                current = int(count_match.group(1))
+                total = int(count_match.group(2))
+                if total > 0:
+                    percentage = min(100, (current / total) * 100)
+                    self.progress_var.set(percentage)
+                    self.progress_text_var.set(f"Processing item {current} of {total} ({percentage:.1f}%)")
+                return
+            
+            # Look for "Processed: n items" style updates
+            processed_match = re.search(r'Processed (\d+) items', line)
+            if processed_match:
+                count = int(processed_match.group(1))
+                self.progress_text_var.set(f"Processed {count} items so far...")
+                return
+                
+        except Exception:
             pass
     
     def setup_color_tags(self):
@@ -1581,9 +1604,9 @@ def {register_func_name}():
     def add_terminal_welcome(self):
         """Add a terminal-like welcome message."""
         welcome_text = """╔══════════════════════════════════════════════════════════════════╗
-║                    Generic Scraper Terminal                      ║
-║                      Ready for Operations                        ║
-╚══════════════════════════════════════════════════════════════════╝
+                          ║                    Generic Scraper Terminal                      ║
+                          ║                      Ready for Operations                        ║
+                          ╚══════════════════════════════════════════════════════════════════╝
 
 Generic Scraper v2.0 - Terminal Interface
 > Select input file, output location, and client to begin scraping
