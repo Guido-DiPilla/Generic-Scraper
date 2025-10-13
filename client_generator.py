@@ -337,6 +337,17 @@ class ClientGeneratorGUI:
         self.product_selector_var = tk.StringVar(value="a.product-link")
         ttk.Entry(form_frame, textvariable=self.product_selector_var, width=50).grid(row=3, column=1, sticky='w', padx=(10, 0), pady=5)
         
+        # Part Number Regex
+        ttk.Label(form_frame, text="Part Number Regex Pattern:").grid(row=4, column=0, sticky='w', pady=5)
+        self.part_regex_var = tk.StringVar(value=r'^[\w\-/\.]{1,64}$')
+        regex_entry = ttk.Entry(form_frame, textvariable=self.part_regex_var, width=50)
+        regex_entry.grid(row=4, column=1, sticky='w', padx=(10, 0), pady=5)
+        
+        # Add help label for regex
+        help_label = ttk.Label(form_frame, text="(Pattern to validate part numbers - e.g., letters, numbers, dashes, dots, 1-64 chars)", 
+                              font=('Arial', 8), foreground='gray')
+        help_label.grid(row=5, column=1, sticky='w', padx=(10, 0), pady=(0, 5))
+        
         # Options frame
         options_frame = ttk.LabelFrame(parent, text="Options")
         options_frame.pack(fill='x', padx=20, pady=20)
@@ -625,6 +636,7 @@ class ClientGeneratorGUI:
         search_endpoint = self.search_endpoint_var.get()
         search_param = self.search_param_var.get()
         product_selector = self.product_selector_var.get()
+        part_regex = self.part_regex_var.get()
         
         # Validate required fields
         if not all([client_id, client_name, base_url]):
@@ -767,7 +779,7 @@ def {func_name}() -> ClientConfig:
         'search_param_name': "{search_param}",
         'product_link_selector': "{product_selector}",
         'field_mappings': field_mappings,
-        'part_number_regex': r'^[\\w\\-/\\.]{{1,64}}$',
+        'part_number_regex': r'{part_regex}',
         'normalize_part_number': {str(self.normalize_parts_var.get())},
         'exact_match_required': {str(self.exact_match_var.get())},
         'output_columns': output_columns
@@ -858,6 +870,7 @@ def {register_func_name}():
             'search_endpoint': self.search_endpoint_var.get(),
             'search_param': self.search_param_var.get(),
             'product_selector': self.product_selector_var.get(),
+            'part_regex': self.part_regex_var.get(),
             'normalize_parts': self.normalize_parts_var.get(),
             'exact_match': self.exact_match_var.get(),
             'fields': []
@@ -902,6 +915,7 @@ def {register_func_name}():
                 self.search_endpoint_var.set(template_data.get('search_endpoint', '/search'))
                 self.search_param_var.set(template_data.get('search_param', 'q'))
                 self.product_selector_var.set(template_data.get('product_selector', 'a.product-link'))
+                self.part_regex_var.set(template_data.get('part_regex', r'^[\w\-/\.]{1,64}$'))
                 self.normalize_parts_var.set(template_data.get('normalize_parts', True))
                 self.exact_match_var.set(template_data.get('exact_match', True))
                 
@@ -947,6 +961,8 @@ def {register_func_name}():
                     self.search_param_var.set(client_config.search_param_name)
                 if hasattr(self, 'product_selector_var'):
                     self.product_selector_var.set(client_config.product_link_selector)
+                if hasattr(self, 'part_regex_var'):
+                    self.part_regex_var.set(client_config.part_number_regex or r'^[\w\-/\.]{1,64}$')
                 
                 # Populate advanced settings  
                 if hasattr(self, 'normalize_parts_var'):
