@@ -4,7 +4,12 @@ Unit tests for scraper.py (parsing and error handling)
 import pytest
 import asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
-from modern_refactored.scraper import process_part_number, FetchError, fetch
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from generic_scraper import process_part_number, fetch
+from exceptions import FetchError
 import aiohttp
 import time
 from pathlib import Path
@@ -22,14 +27,14 @@ async def test_process_part_number_success():
         else:
             # Second fetch: product details
             return ("<h1 class='productView-title'>Test Product</h1><div class='productView-sku'><span>ABC123</span></div>", 200)
-    with patch('modern_refactored.scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
+    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
         result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
         assert result['Status'] in {'Success', 'Failed', 'No Exact Match', 'Not Found'}
 
 @pytest.mark.asyncio
 async def test_process_part_number_fetch_error():
     session = AsyncMock(spec=aiohttp.ClientSession)
-    with patch('modern_refactored.scraper.fetch', new=AsyncMock(side_effect=FetchError("fail"))):
+    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=FetchError("fail"))):
         result = await process_part_number(session, 'BAD', asyncio.Semaphore(1))
         assert result['Status'] == 'FetchError'
         assert 'Error' in result
@@ -124,7 +129,7 @@ async def test_process_part_number_parsing_integration():
             return (search_html, 200)
         return (product_html, 200)
 
-    with patch('modern_refactored.scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
+    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
         result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
         assert result['Status'] == 'Success'
         assert result['Exists'] == 'Yes'

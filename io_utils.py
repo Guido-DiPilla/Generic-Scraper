@@ -12,12 +12,8 @@ from typing import Union
 
 import pandas as pd
 
-try:
-    from .exceptions import ParseError
-    from .log_utils import mask_secrets
-except ImportError:
-    from exceptions import ParseError
-    from log_utils import mask_secrets
+from exceptions import ParseError
+from log_utils import mask_secrets
 
 
 def read_part_numbers_in_chunks(input_csv: Path, chunksize: int) -> Iterator[list[str]]:

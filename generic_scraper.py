@@ -28,15 +28,10 @@ import re
 import aiohttp
 from bs4 import BeautifulSoup, Tag
 
-# Import shim: allow running as a module or as a script without package context
-try:  # Prefer package-relative imports
-    from .exceptions import FetchError
-    from .log_utils import mask_secrets
-    from .client_config import ClientConfig, FieldMapping, normalize_part_number
-except ImportError:  # Fallback for direct script execution
-    from exceptions import FetchError
-    from log_utils import mask_secrets
-    from client_config import ClientConfig, FieldMapping, normalize_part_number
+# Direct imports - used by app.py subprocess
+from exceptions import FetchError
+from log_utils import mask_secrets
+from client_config import ClientConfig, FieldMapping, normalize_part_number
 
 USER_AGENT = "Mozilla/5.0"
 
@@ -350,9 +345,4 @@ async def process_part_number(
     )
 
 
-if __name__ == "__main__":
-    print("This module contains generic scraping functions and is not meant to be run directly.")
-    print("To run the scraper, use:")
-    print("  python app.py")
-    print("Or run as a module:")
-    print("  python -m generic_scraper")
+# Module contains generic scraping functions - use app.py or GUI to run scraper

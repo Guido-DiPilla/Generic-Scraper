@@ -85,22 +85,24 @@ EMAIL_NOTIFY_TO=notifications@example.com
 
 ## 🎯 Quick Start
 
-### **Interactive Mode (Recommended)**
+### **GUI Interface (Primary Method)**
 ```bash
-# Run with client selection menu
-./venv/bin/python app.py
-
-# Output:
-# Available Scraping Clients:
-#   1. G2S Equipment (g2s) - G2S Equipment product and inventory scraper
-#   2. Demo Client (demo) - Simple demo client for testing
-#   3. Auto Parts Demo (auto_parts_demo) - Demo auto parts supplier
-# Select client number: 1
+# Launch the graphical interface
+./venv/bin/python generate_client.py
+# or
+./venv/bin/python client_generator.py
 ```
 
-### **Direct Client Selection**
+The GUI provides:
+- **File selection dialogs** for input/output CSV files
+- **Client selection dropdown** with all available scrapers
+- **Proxy configuration** with credential management
+- **Real-time progress tracking** with colorized terminal output
+- **Advanced settings** for concurrency, timeouts, and email notifications
+
+### **Command Line (For Automation)**
 ```bash
-# Run specific client directly
+# Direct execution with all parameters
 ./venv/bin/python app.py --client g2s --input-csv parts.csv --output-csv results.csv
 
 # With all options
@@ -131,15 +133,11 @@ The framework provides **three methods** for adding new scraping clients:
 - 💾 Save/load templates
 - 🚀 One-click client generation
 
-### **Method 2: CLI Client Generator (Servers/Headless)**
-```bash
-./venv/bin/python generate_client_cli.py
-```
-
-**Features:**
-- 💻 Interactive command-line prompts
-- ✅ Same functionality as GUI version
-- 🏢 Perfect for headless servers
+### **Manual Method (Advanced Users)**
+For advanced users who prefer manual configuration:
+1. Copy `clients/example_client_template.py`
+2. Modify the configuration for your website  
+3. Add import/registration to `clients/__init__.py`
 
 ### **Method 3: Manual Configuration (Advanced)**
 1. Copy `clients/example_client_template.py`
@@ -216,31 +214,25 @@ EMAIL_NOTIFY_TO=your@email.com
 
 ## Quick Start
 
-### 1. Run the scraper
+### 1. Launch the GUI
 ```bash
-# Interactive mode - will prompt for client and files
-python app.py
-
-# Or specify client directly
-python app.py --client g2s
-
-# With all options
-python app.py --client g2s --input-csv parts.csv --output-csv results.csv
+# Start the graphical interface
+python generate_client.py
 ```
 
-### 2. Client Selection
-When you run the scraper, you'll be prompted to select from available clients:
-```
-Available Scraping Clients:
-  1. G2S Equipment (g2s) - G2S Equipment product and inventory scraper
-  2. Demo Client (demo) - Simple demo client for testing
-Select client number: 1
-```
+### 2. Configure Scraping
+In the GUI:
+- **Select client** from the dropdown (G2S, Demo, etc.)
+- **Choose input CSV** file containing part numbers
+- **Set output location** for results
+- **Configure proxy** settings if needed
+- **Adjust advanced settings** like concurrency and email notifications
 
-### 3. File Selection
-You'll get GUI file dialogs (or CLI prompts if GUI unavailable) to select:
-- **Input CSV**: File containing part numbers to scrape (one per row)
-- **Output file**: Where to save results (CSV/JSON/Excel format)
+### 3. Run and Monitor
+- Click "Start Scraping" to begin
+- **Real-time progress** updates in the terminal display  
+- **Colorized output** shows status, errors, and results
+- **Email notification** when complete (if enabled)
 
 ## Adding New Clients
 

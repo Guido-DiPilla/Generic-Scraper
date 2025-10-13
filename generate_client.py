@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Launch the Client Generator GUI
-Simple launcher script for the client generator tool.
+Launch the Generic Scraper GUI
+Primary interface for the Generic Multi-Client Web Scraper.
 """
 
 import sys

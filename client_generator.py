@@ -582,7 +582,7 @@ class ClientGeneratorGUI:
         
         # Rate limit
         ttk.Label(rate_frame, text="Requests per second:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        self.rate_limit_var = tk.StringVar(value="1.0")
+        self.rate_limit_var = tk.StringVar(value="5")
         rate_limit_entry = ttk.Entry(rate_frame, textvariable=self.rate_limit_var, width=10)
         rate_limit_entry.grid(row=0, column=1, sticky='w', padx=5)
         

@@ -33,37 +33,37 @@ def create_g2s_config() -> ClientConfig:
         
         # Inventory levels
         "Montreal": FieldMapping(
-            css_selector="dt:contains('stock-montreal:') + dd",
+            css_selector="dt:-soup-contains('stock-montreal:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
         "Mississauga": FieldMapping(
-            css_selector="dt:contains('stock-mississauga:') + dd", 
+            css_selector="dt:-soup-contains('stock-mississauga:') + dd", 
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
         "Edmonton": FieldMapping(
-            css_selector="dt:contains('stock-edmonton:') + dd",
+            css_selector="dt:-soup-contains('stock-edmonton:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
         
         # Product flags
         "Dropship Item": FieldMapping(
-            css_selector="dt:contains('Dropship Item:') + dd",
+            css_selector="dt:-soup-contains('Dropship Item:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
         "LTL - Freight Extra": FieldMapping(
-            css_selector="dt:contains('LTL - Freight Extra:') + dd",
+            css_selector="dt:-soup-contains('LTL - Freight Extra:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
         "Special Order Items": FieldMapping(
-            css_selector="dt:contains('Special Order Items:') + dd",
+            css_selector="dt:-soup-contains('Special Order Items:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
         "While Quantities Last": FieldMapping(
-            css_selector="dt:contains('While Quantities Last:') + dd",
+            css_selector="dt:-soup-contains('While Quantities Last:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
         "less-than-truckload": FieldMapping(
-            css_selector="dt:contains('less-than-truckload:') + dd",
+            css_selector="dt:-soup-contains('less-than-truckload:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
     }

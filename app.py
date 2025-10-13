@@ -1,4 +1,4 @@
-"""Main entry point for the Generic Multi-Client Web Scraper.
+"""Main entry point for the Multi-Client Web Scraper.
 
 Supports running both as a module (python -m generic_scraper.app)
 and directly as a script (python generic_scraper/app.py).
@@ -16,39 +16,22 @@ import typer
 from rich.progress import Progress
 from rich.table import Table
 
-# Import shim: allow running as a module or as a script without package context
-try:  # Prefer package-relative imports
-    from .config import get_config
-    from .email_utils import send_email
-    from .io_utils import (
-        generate_summary_report,
-        read_part_numbers_in_chunks,
-        save_results_atomic,
-        validate_input_schema,
-        validate_output_schema,
-    )
-    from .log_utils import mask_secrets, setup_logging
-    from .generic_scraper import process_part_number_generic
-    from .ui import console, select_file
-    from .client_config import registry
-    from . import clients  # This registers all available clients
-    from . import G2S     # This registers G2S client from separate folder
-except ImportError:  # Fallback for direct script execution
-    from config import get_config
-    from email_utils import send_email
-    from io_utils import (
-        generate_summary_report,
-        read_part_numbers_in_chunks,
-        save_results_atomic,
-        validate_input_schema,
-        validate_output_schema,
-    )
-    from log_utils import mask_secrets, setup_logging
-    from generic_scraper import process_part_number_generic
-    from ui import console, select_file
-    from client_config import registry
-    import clients  # This registers all available clients
-    import G2S     # This registers G2S client from separate folder
+# Direct imports - app.py is run as script by GUI subprocess
+from config import get_config
+from email_utils import send_email
+from io_utils import (
+    generate_summary_report,
+    read_part_numbers_in_chunks,
+    save_results_atomic,
+    validate_input_schema,
+    validate_output_schema,
+)
+from log_utils import mask_secrets, setup_logging
+from generic_scraper import process_part_number_generic
+from ui import console
+from client_config import registry
+import clients  # This registers all available clients
+import G2S     # This registers G2S client from separate folder
 
 app = typer.Typer()
 
@@ -57,60 +40,27 @@ class OutputFormat(str, Enum):
     json = "json"
     excel = "excel"
 
-def option_wrapper(help_text):
-    """Simple wrapper to create options with consistent settings"""
-    def decorator(f):
-        return typer.Option(f, help=help_text)
-    return decorator
-
 @app.command()
 def main(
-    input_csv: Optional[Path] = option_wrapper("Input CSV file path")(None),
-    output_csv: Optional[Path] = option_wrapper("Output file path (CSV/JSON/Excel)")(None),
-    client: Optional[str] = option_wrapper("Client ID (e.g., 'g2s'). If not provided, will prompt for selection.")(None),
-    log_level: Optional[str] = option_wrapper("Log level (INFO, DEBUG, etc.)")(None),
-    dry_run: bool = option_wrapper("Dry run mode (no writes)")(False),
-    output_format: OutputFormat = option_wrapper("Output format: csv, json, or excel")(OutputFormat.csv),
-    resume: bool = option_wrapper("Resume from existing output by skipping already processed part numbers")(False),
+    input_csv: Path = typer.Option(..., "--input-csv", help="Input CSV file path"),
+    output_csv: Path = typer.Option(..., "--output-csv", help="Output file path (CSV/JSON/Excel)"),
+    client: str = typer.Option(..., "--client", help="Client ID (e.g., 'g2s')"),
+    log_level: Optional[str] = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),
+    dry_run: bool = typer.Option(False, help="Dry run mode (no writes)"),
+    output_format: OutputFormat = typer.Option(OutputFormat.csv, help="Output format: csv, json, or excel"),
+    resume: bool = typer.Option(False, help="Resume from existing output by skipping already processed part numbers"),
 ) -> None:
-    """Run the Generic Scraper with CLI or interactive mode."""
+    """Run the Generic Scraper with required parameters (designed to be called by GUI)."""
     config = get_config()
     if log_level:
         config = config.__class__(**{**config.__dict__, 'log_level': log_level})
     
-    # Client selection
-    client_config = None
-    if client:
-        client_config = registry.get_client(client)
-        if not client_config:
-            available_clients = registry.get_client_ids()
-            console.print(f"[red]Client '{client}' not found. Available clients: {', '.join(available_clients)}[/red]")
-            raise typer.Exit(1)
-    else:
-        # Interactive client selection
-        available_clients = registry.list_clients()
-        if not available_clients:
-            console.print("[red]No clients are registered. Please check your client configurations.[/red]")
-            raise typer.Exit(1)
-        elif len(available_clients) == 1:
-            client_config = available_clients[0]
-            console.print(f"[cyan]Using only available client: {client_config.client_name}[/cyan]")
-        else:
-            console.print("[bold cyan]Available Scraping Clients:[/bold cyan]")
-            for i, cfg in enumerate(available_clients, 1):
-                console.print(f"  {i}. {cfg.client_name} ({cfg.client_id}) - {cfg.description}")
-            
-            while True:
-                try:
-                    choice = typer.prompt("Select client number")
-                    client_idx = int(choice) - 1
-                    if 0 <= client_idx < len(available_clients):
-                        client_config = available_clients[client_idx]
-                        break
-                    else:
-                        console.print(f"[red]Please enter a number between 1 and {len(available_clients)}[/red]")
-                except (ValueError, KeyboardInterrupt):
-                    console.print("[red]Invalid selection. Please enter a number.[/red]")
+    # Client selection - parameter is now required by typer
+    client_config = registry.get_client(client)
+    if not client_config:
+        available_clients = registry.get_client_ids()
+        console.print(f"[red]Client '{client}' not found. Available clients: {', '.join(available_clients)}[/red]")
+        raise typer.Exit(1)
                     
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
 
@@ -180,13 +130,9 @@ def main(
     asyncio.run(proxy_test())
 
     setup_logging(config.log_file, config.log_level)
-    console.print("[bold cyan]Generic Multi-Client Web Scraper[/bold cyan]")
+    console.print("[bold cyan] Multi-Client Web Scraper[/bold cyan]")
 
-    # Use CLI args if provided, else prompt interactively
-    if input_csv is None:
-        input_csv = select_file("open")
-    if output_csv is None:
-        output_csv = select_file("save")
+    # Input and output files are now required by typer - no validation needed
 
     # Ensure Path type
     if not isinstance(input_csv, Path):
