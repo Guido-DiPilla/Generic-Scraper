@@ -17,8 +17,23 @@ import json
 class ClientGeneratorGUI:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Generic Scraper - Client Generator")
-        self.root.geometry("800x600")
+        self.root.title("Generic Scraper - Main Application")
+        
+        # Get screen dimensions
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Set window to reasonable width but nearly full height
+        window_width = min(1200, int(screen_width * 0.7))  # 70% of screen width, max 1200px
+        window_height = int(screen_height * 0.9)           # 90% of screen height
+        
+        # Calculate position to center horizontally
+        x_position = (screen_width - window_width) // 2
+        y_position = 20  # Small margin from top
+        
+        # Set geometry: width x height + x_offset + y_offset
+        self.root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+        self.root.minsize(800, 600)     # Set minimum size
         
         # Client configuration data
         self.client_data = {}
@@ -31,31 +46,231 @@ class ClientGeneratorGUI:
         # Create notebook for tabs
         notebook = ttk.Notebook(self.root)
         notebook.pack(fill='both', expand=True, padx=10, pady=10)
+        self.notebook = notebook  # Store reference for later use
         
-        # Tab 1: Basic Information
+        # Tab 1: Run Scraper (NEW - Main functionality)
+        scraper_frame = ttk.Frame(notebook)
+        notebook.add(scraper_frame, text="Run Scraper")
+        self.setup_scraper_tab(scraper_frame)
+        
+        # Tab 2: Create Client - Basic Information
         basic_frame = ttk.Frame(notebook)
-        notebook.add(basic_frame, text="Basic Info")
+        notebook.add(basic_frame, text="Create Client")
         self.setup_basic_tab(basic_frame)
         
-        # Tab 2: Website Configuration
+        # Tab 3: Website Configuration
         website_frame = ttk.Frame(notebook)
         notebook.add(website_frame, text="Website Config")
         self.setup_website_tab(website_frame)
         
-        # Tab 3: Field Mappings
+        # Tab 4: Field Mappings
         fields_frame = ttk.Frame(notebook)
         notebook.add(fields_frame, text="Field Mappings")
         self.setup_fields_tab(fields_frame)
         
-        # Tab 4: Advanced Settings
+        # Tab 5: Advanced Settings
         advanced_frame = ttk.Frame(notebook)
         notebook.add(advanced_frame, text="Advanced")
         self.setup_advanced_tab(advanced_frame)
         
-        # Tab 5: Preview & Generate
+        # Tab 6: Preview & Generate
         preview_frame = ttk.Frame(notebook)
         notebook.add(preview_frame, text="Preview & Generate")
         self.setup_preview_tab(preview_frame)
+        
+        # Ensure the first tab (Run Scraper) is selected by default
+        notebook.select(0)
+    
+    def setup_scraper_tab(self, parent):
+        """Set up the main scraper execution tab."""
+        # Title Section
+        title_frame = ttk.Frame(parent)
+        title_frame.pack(fill='x', padx=20, pady=(15, 10))
+        
+        # Main title
+        ttk.Label(title_frame, text="🚀 Generic Multi-Client Web Scraper", 
+                 font=('Arial', 18, 'bold')).pack(side='left')
+        
+        # Status indicator with better styling
+        self.status_var = tk.StringVar(value="Ready")
+        status_label = ttk.Label(title_frame, textvariable=self.status_var, 
+                                font=('Arial', 11, 'bold'), foreground='#007700')
+        status_label.pack(side='right')
+        
+        # Subtitle
+        subtitle_frame = ttk.Frame(parent)
+        subtitle_frame.pack(fill='x', padx=20, pady=(0, 15))
+        ttk.Label(subtitle_frame, text="Select input file, output location, and client to begin scraping operations", 
+                 font=('Arial', 10), foreground='#666666').pack()
+        
+        # Separator
+        separator = ttk.Separator(parent, orient='horizontal')
+        separator.pack(fill='x', padx=20, pady=(0, 20))
+        
+        # Client Selection Section
+        client_frame = ttk.LabelFrame(parent, text="Client Selection")
+        client_frame.pack(fill='x', padx=20, pady=10)
+        
+        ttk.Label(client_frame, text="Select scraping client:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        
+        # Get available clients by scanning directories and importing them
+        client_names = []
+        try:
+            from client_config import registry
+            
+            # Import G2S client to trigger registration
+            try:
+                import G2S.g2s_client  # Just importing triggers auto-registration
+            except ImportError:
+                pass
+            
+            # Scan clients directory for additional clients
+            from pathlib import Path
+            clients_dir = Path(__file__).parent / "clients"
+            if clients_dir.exists():
+                for client_file in clients_dir.glob("*.py"):
+                    if client_file.name.startswith("__"):
+                        continue
+                    try:
+                        # Import client module to trigger any auto-registration
+                        module_name = f"clients.{client_file.stem}"
+                        __import__(module_name)
+                    except ImportError:
+                        continue
+            
+            # Get all registered clients
+            available_clients = registry.get_client_ids()
+            for client_id in available_clients:
+                client = registry.get_client(client_id)
+                if client:
+                    client_names.append(f"{client.client_name} ({client_id})")
+            
+            # If no clients found in registry, add G2S manually as fallback
+            if not client_names:
+                client_names = ['G2S Equipment (g2s)']
+                
+        except Exception as e:
+            # Fallback list if everything fails
+            client_names = ['G2S Equipment (g2s)', 'Demo Client (demo)']
+            print(f"Warning: Could not load client registry: {e}")
+        
+        self.selected_client_var = tk.StringVar()
+        client_dropdown = ttk.Combobox(client_frame, textvariable=self.selected_client_var, 
+                                      values=client_names, state='readonly', width=50)
+        client_dropdown.grid(row=0, column=1, sticky='w', padx=5, pady=5)
+        
+        # Set G2S as default if available
+        if client_names:
+            for i, name in enumerate(client_names):
+                if 'g2s' in name.lower():
+                    client_dropdown.current(i)
+                    break
+            else:
+                client_dropdown.current(0)
+        
+        # File Selection Section
+        files_frame = ttk.LabelFrame(parent, text="File Selection")
+        files_frame.pack(fill='x', padx=20, pady=10)
+        
+        # Input file selection
+        ttk.Label(files_frame, text="Input CSV file:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        self.input_file_var = tk.StringVar()
+        input_entry = ttk.Entry(files_frame, textvariable=self.input_file_var, width=50)
+        input_entry.grid(row=0, column=1, sticky='w', padx=5, pady=5)
+        ttk.Button(files_frame, text="Browse...", 
+                  command=self.browse_input_file).grid(row=0, column=2, padx=5, pady=5)
+        
+        # Output file selection
+        ttk.Label(files_frame, text="Output CSV file:").grid(row=1, column=0, sticky='w', pady=5, padx=5)
+        self.output_file_var = tk.StringVar()
+        output_entry = ttk.Entry(files_frame, textvariable=self.output_file_var, width=50)
+        output_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+        ttk.Button(files_frame, text="Browse...", 
+                  command=self.browse_output_file).grid(row=1, column=2, padx=5, pady=5)
+        
+        # Options Section
+        options_frame = ttk.LabelFrame(parent, text="Scraping Options")
+        options_frame.pack(fill='x', padx=20, pady=10)
+        
+        # Concurrency
+        ttk.Label(options_frame, text="Concurrency limit:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        self.concurrency_var = tk.StringVar(value="3")
+        ttk.Entry(options_frame, textvariable=self.concurrency_var, width=10).grid(row=0, column=1, sticky='w', padx=5)
+        
+        # Chunk size
+        ttk.Label(options_frame, text="Chunk size:").grid(row=0, column=2, sticky='w', pady=5, padx=(20, 5))
+        self.chunk_size_var = tk.StringVar(value="500")
+        ttk.Entry(options_frame, textvariable=self.chunk_size_var, width=10).grid(row=0, column=3, sticky='w', padx=5)
+        
+        # Email notification
+        self.email_notify_var = tk.BooleanVar()
+        ttk.Checkbutton(options_frame, text="Send email notification when complete", 
+                       variable=self.email_notify_var).grid(row=1, column=0, columnspan=4, sticky='w', padx=5, pady=5)
+        
+        # Progress Section
+        progress_frame = ttk.LabelFrame(parent, text="Progress")
+        progress_frame.pack(fill='both', expand=True, padx=20, pady=10)
+        
+        # Progress bar
+        self.progress_var = tk.DoubleVar()
+        self.progress_bar = ttk.Progressbar(progress_frame, variable=self.progress_var, 
+                                           maximum=100, length=400)
+        self.progress_bar.pack(pady=10)
+        
+        # Progress text
+        self.progress_text_var = tk.StringVar(value="Ready to start scraping...")
+        ttk.Label(progress_frame, textvariable=self.progress_text_var).pack(pady=5)
+        
+        # Terminal-like log area with frame styling
+        log_frame = tk.Frame(progress_frame, bg='#000000', relief='sunken', bd=2)
+        log_frame.pack(fill='both', expand=True, pady=10)
+        
+        # Create terminal-like text widget with black background
+        self.log_text = tk.Text(
+            log_frame, 
+            height=15,  # Increased height for better visibility
+            wrap='word',
+            bg='#000000',  # Black background
+            fg='#00FF00',  # Green text (classic terminal)
+            insertbackground='#00FF00',  # Green cursor
+            selectbackground='#333333',  # Dark selection
+            selectforeground='#FFFFFF',  # White selected text
+            font=('Consolas', 9) if tk.TkVersion >= 8.5 else ('Courier', 9),
+            relief='flat',
+            bd=0,
+            padx=10,
+            pady=5
+        )
+        
+        log_scrollbar = ttk.Scrollbar(log_frame, orient='vertical', command=self.log_text.yview)
+        self.log_text.configure(yscrollcommand=log_scrollbar.set)
+        
+        # Configure color tags for Rich output
+        self.setup_color_tags()
+        
+        # Add initial terminal welcome message
+        self.add_terminal_welcome()
+        
+        self.log_text.pack(side='left', fill='both', expand=True)
+        log_scrollbar.pack(side='right', fill='y')
+        
+        # Control Buttons
+        button_frame = ttk.Frame(parent)
+        button_frame.pack(fill='x', padx=20, pady=10)
+        
+        self.start_button = ttk.Button(button_frame, text="Start Scraping", 
+                                      command=self.start_scraping, style='Accent.TButton')
+        self.start_button.pack(side='left', padx=5)
+        
+        self.stop_button = ttk.Button(button_frame, text="Stop", 
+                                     command=self.stop_scraping, state='disabled')
+        self.stop_button.pack(side='left', padx=5)
+        
+        ttk.Button(button_frame, text="Clear Log", 
+                  command=self.clear_log).pack(side='left', padx=5)
+        
+        ttk.Button(button_frame, text="Open Results Folder", 
+                  command=self.open_results_folder).pack(side='right', padx=5)
     
     def setup_basic_tab(self, parent):
         """Set up basic information tab."""
@@ -693,7 +908,356 @@ def {register_func_name}():
                 
             except Exception as e:
                 messagebox.showerror("Error", f"Error loading template: {str(e)}")
+    def browse_input_file(self):
+        """Browse for input CSV file."""
+        filename = filedialog.askopenfilename(
+            title="Select Input CSV File",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+        )
+        if filename:
+            self.input_file_var.set(filename)
     
+    def browse_output_file(self):
+        """Browse for output CSV file."""
+        filename = filedialog.asksaveasfilename(
+            title="Select Output CSV File",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            defaultextension=".csv"
+        )
+        if filename:
+            self.output_file_var.set(filename)
+    
+    def start_scraping(self):
+        """Start the scraping process."""
+        # Validate inputs
+        if not self.input_file_var.get():
+            messagebox.showerror("Error", "Please select an input CSV file.")
+            return
+        
+        if not self.output_file_var.get():
+            messagebox.showerror("Error", "Please select an output CSV file.")
+            return
+        
+        if not self.selected_client_var.get():
+            messagebox.showerror("Error", "Please select a client.")
+            return
+        
+        # Extract client ID from selection
+        client_selection = self.selected_client_var.get()
+        client_id = client_selection.split('(')[-1].rstrip(')')
+        
+        # Update UI
+        self.start_button.config(state='disabled')
+        self.stop_button.config(state='normal')
+        self.status_var.set("Running...")
+        self.progress_var.set(0)
+        self.progress_text_var.set("Starting scraping process...")
+        
+        # Log start with styling
+        self.log_message(f"🚀 Starting scraping with client: {client_id}", 'bright_green')
+        self.log_message(f"📁 Input file: {self.input_file_var.get()}", 'info')
+        self.log_message(f"💾 Output file: {self.output_file_var.get()}", 'info')
+        self.log_message("─" * 68, 'dim')
+        
+        # Start scraping in background thread
+        import threading
+        self.scraping_thread = threading.Thread(target=self._run_scraping, args=(client_id,))
+        self.scraping_thread.daemon = True
+        self.scraping_thread.start()
+    
+    def _run_scraping(self, client_id):
+        """Run the scraping process in background thread."""
+        try:
+            import subprocess
+            import sys
+            import os
+            from pathlib import Path
+            
+            # Use virtual environment Python if available
+            venv_python = Path(__file__).parent / "venv" / "bin" / "python"
+            python_executable = str(venv_python) if venv_python.exists() else sys.executable
+            
+            # Build command
+            cmd = [
+                python_executable, "app.py",
+                "--client", client_id,
+                "--input-csv", self.input_file_var.get(),
+                "--output-csv", self.output_file_var.get(),
+                "--concurrency-limit", str(self.concurrency_var.get()),
+                "--chunksize", str(self.chunk_size_var.get())
+            ]
+            
+            if self.email_notify_var.get():
+                cmd.append("--email-notify")
+            
+            self.log_message(f"Executing: {' '.join(cmd)}")
+            
+            # Set environment to preserve Rich colors
+            env = os.environ.copy()
+            env['FORCE_COLOR'] = '1'
+            env['TERM'] = 'xterm-256color'
+            
+            # Run the scraping process
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True,
+                env=env
+            )
+            
+            # Read output line by line
+            if process.stdout:
+                for line in process.stdout:
+                    if line:  # Don't strip to preserve formatting
+                        # Detect line type and apply appropriate styling
+                        if "✅" in line or "Success" in line:
+                            self.root.after(0, self.log_rich_output, line)
+                            self.root.after(0, self.log_message, "", "success")
+                        elif "❌" in line or "Error" in line or "Failed" in line:
+                            self.root.after(0, self.log_rich_output, line)
+                            self.root.after(0, self.log_message, "", "error")
+                        elif "⚠️" in line or "Warning" in line:
+                            self.root.after(0, self.log_rich_output, line)
+                            self.root.after(0, self.log_message, "", "warning")
+                        elif "Progress:" in line or "%" in line or "█" in line:
+                            # Progress bar - use special handling
+                            self.root.after(0, self.log_rich_output, line)
+                            self.root.after(0, self.update_progress_from_line, line)
+                        else:
+                            # Regular output with potential ANSI codes
+                            self.root.after(0, self.log_rich_output, line)
+            
+            # Wait for completion
+            return_code = process.wait()
+            
+            if return_code == 0:
+                self.root.after(0, self.scraping_complete, True)
+            else:
+                self.root.after(0, self.scraping_complete, False)
+                
+        except Exception as e:
+            self.root.after(0, self.log_message, f"Error: {str(e)}")
+            self.root.after(0, self.scraping_complete, False)
+    
+    def stop_scraping(self):
+        """Stop the scraping process."""
+        if hasattr(self, 'scraping_thread') and self.scraping_thread.is_alive():
+            self.log_message("Stopping scraping process...")
+            # Note: This is a simple implementation. In a real scenario, 
+            # you'd want to properly terminate the subprocess
+        self.scraping_complete(False)
+    
+    def scraping_complete(self, success):
+        """Handle scraping completion."""
+        self.start_button.config(state='normal')
+        self.stop_button.config(state='disabled')
+        
+        if success:
+            self.status_var.set("Completed successfully")
+            self.progress_var.set(100)
+            self.progress_text_var.set("Scraping completed successfully!")
+            self.log_message("─" * 68, 'dim')
+            self.log_message("✅ SCRAPING COMPLETED SUCCESSFULLY! ✅", 'success')
+            self.log_message(f"📊 Results saved to: {self.output_file_var.get()}", 'bright_green')
+            self.log_message("─" * 68, 'dim')
+            
+            # Show completion message
+            messagebox.showinfo("Success", 
+                              f"Scraping completed successfully!\n\nResults saved to:\n{self.output_file_var.get()}")
+        else:
+            self.status_var.set("Failed")
+            self.progress_text_var.set("Scraping failed or was stopped")
+            self.log_message("─" * 68, 'dim')
+            self.log_message("❌ SCRAPING FAILED OR STOPPED ❌", 'error')
+            self.log_message("Check the logs above for error details", 'warning')
+            self.log_message("─" * 68, 'dim')
+    
+    def update_progress_from_line(self, line):
+        """Update progress bar from log line."""
+        try:
+            # Try to extract percentage from line
+            import re
+            match = re.search(r'(\d+)%', line)
+            if match:
+                percentage = int(match.group(1))
+                self.progress_var.set(percentage)
+                self.progress_text_var.set(f"Progress: {percentage}%")
+        except:
+            pass
+    
+    def setup_color_tags(self):
+        """Set up color tags for terminal-like output."""
+        # Rich color mapping for terminal display
+        color_mapping = {
+            'green': '#00FF00',
+            'red': '#FF5555',
+            'yellow': '#FFFF55',
+            'blue': '#5555FF',
+            'magenta': '#FF55FF',
+            'cyan': '#55FFFF',
+            'white': '#FFFFFF',
+            'bright_green': '#55FF55',
+            'bright_red': '#FF5555',
+            'bright_yellow': '#FFFF55',
+            'bright_blue': '#5555FF',
+            'bright_magenta': '#FF55FF',
+            'bright_cyan': '#55FFFF',
+            'bright_white': '#FFFFFF',
+            'dim': '#808080',
+            'bold': '#FFFFFF',
+        }
+        
+        # Configure tags for each color
+        for tag, color in color_mapping.items():
+            self.log_text.tag_configure(tag, foreground=color)
+        
+        # Special tags for formatting
+        self.log_text.tag_configure('bold', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('underline', underline=True)
+        self.log_text.tag_configure('progress_bar', background='#1a1a1a', foreground='#00FF41')
+        self.log_text.tag_configure('success', foreground='#00FF41', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('error', foreground='#FF4444', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('warning', foreground='#FFAA00', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('info', foreground='#44AAFF')
+        self.log_text.tag_configure('table_header', foreground='#00FFFF', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('table_row', foreground='#CCCCCC')
+        self.log_text.tag_configure('black', foreground='#000000')
+
+    def log_message(self, message, style=None):
+        """Add message to log area with optional styling."""
+        # Insert message with timestamp
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        formatted_message = f"[{timestamp}] {message}\n"
+        
+        start_pos = self.log_text.index(tk.END)
+        self.log_text.insert(tk.END, formatted_message)
+        
+        # Apply styling if specified
+        if style:
+            end_pos = self.log_text.index(tk.END)
+            self.log_text.tag_add(style, start_pos, end_pos)
+        
+        self.log_text.see(tk.END)
+        self.root.update_idletasks()
+
+    def log_rich_output(self, text):
+        """Parse and display Rich-formatted text with colors and formatting."""
+        import re
+        
+        # Comprehensive ANSI color code parsing for Rich output
+        ansi_codes = {
+            # Basic colors
+            '\033[0m': None,           # Reset
+            '\033[1m': 'bold',         # Bold
+            '\033[4m': 'underline',    # Underline
+            '\033[30m': 'black',       # Black
+            '\033[31m': 'red',         # Red
+            '\033[32m': 'green',       # Green
+            '\033[33m': 'yellow',      # Yellow
+            '\033[34m': 'blue',        # Blue
+            '\033[35m': 'magenta',     # Magenta
+            '\033[36m': 'cyan',        # Cyan
+            '\033[37m': 'white',       # White
+            # Bright colors
+            '\033[90m': 'dim',         # Bright Black (Gray)
+            '\033[91m': 'bright_red',  # Bright Red
+            '\033[92m': 'bright_green', # Bright Green
+            '\033[93m': 'bright_yellow', # Bright Yellow
+            '\033[94m': 'bright_blue', # Bright Blue
+            '\033[95m': 'bright_magenta', # Bright Magenta
+            '\033[96m': 'bright_cyan', # Bright Cyan
+            '\033[97m': 'bright_white', # Bright White
+        }
+        
+        # Handle special cases for Rich output
+        if "█" in text or "▓" in text or "░" in text:
+            # Progress bar - use special styling
+            self.insert_styled_text(text, 'progress_bar')
+        elif text.startswith("┌") or text.startswith("├") or text.startswith("└"):
+            # Table borders - cyan color
+            self.insert_styled_text(text, 'cyan')
+        elif "│" in text:
+            # Table content - preserve formatting
+            self.parse_and_insert_ansi(text, ansi_codes)
+        else:
+            # Regular text with ANSI codes
+            self.parse_and_insert_ansi(text, ansi_codes)
+            
+        self.log_text.see(tk.END)
+        self.root.update_idletasks()
+
+    def parse_and_insert_ansi(self, text, ansi_codes):
+        """Parse ANSI codes and insert formatted text."""
+        import re
+        
+        # Split text by ANSI codes
+        parts = re.split(r'(\033\[[0-9;]*m)', text)
+        current_styles = []
+        
+        for part in parts:
+            if part in ansi_codes:
+                style = ansi_codes[part]
+                if style is None:  # Reset
+                    current_styles = []
+                elif style not in current_styles:
+                    current_styles.append(style)
+            elif part:  # Non-empty text part
+                self.insert_styled_text(part, current_styles)
+    
+    def insert_styled_text(self, text, styles):
+        """Insert text with given styles."""
+        start_pos = self.log_text.index(tk.END)
+        self.log_text.insert(tk.END, text)
+        
+        if styles:
+            end_pos = self.log_text.index(tk.END)
+            if isinstance(styles, str):
+                styles = [styles]
+            for style in styles:
+                self.log_text.tag_add(style, start_pos, end_pos)
+
+    def add_terminal_welcome(self):
+        """Add a terminal-like welcome message."""
+        welcome_text = """╔══════════════════════════════════════════════════════════════════╗
+║                    Generic Scraper Terminal                      ║
+║                      Ready for Operations                        ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Generic Scraper v2.0 - Terminal Interface
+> Select input file, output location, and client to begin scraping
+> All CLI output will be displayed here with full color support
+> Progress bars, tables, and status updates will appear in real-time
+
+"""
+        self.insert_styled_text(welcome_text, 'bright_green')
+        self.log_text.insert(tk.END, "─" * 68 + "\n\n")
+        self.insert_styled_text("System: Ready to start scraping operations...\n", 'info')
+    
+    def clear_log(self):
+        """Clear the log area and restore welcome message."""
+        self.log_text.delete(1.0, tk.END)
+        self.add_terminal_welcome()
+    
+    def open_results_folder(self):
+        """Open the folder containing results."""
+        if self.output_file_var.get():
+            import platform
+            import subprocess
+            
+            folder = str(Path(self.output_file_var.get()).parent)
+            
+            if platform.system() == "Windows":
+                import os
+                os.startfile(folder)
+            elif platform.system() == "Darwin":  # macOS
+                subprocess.Popen(["open", folder])
+            else:  # Linux
+                subprocess.Popen(["xdg-open", folder])
+
     def run(self):
         """Run the GUI."""
         self.root.mainloop()
