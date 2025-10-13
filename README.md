@@ -1,4 +1,4 @@
-# Generic Multi-Client Web Scraper
+# Multi-Client Web Scraper
 
 A robust, async, and modular Python scraper framework that evolved from a single-purpose G2S scraper into a comprehensive multi-client platform. Built for enterprise reliability with beautiful UI and easy extensibility.
 
