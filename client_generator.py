@@ -11,7 +11,7 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 from pathlib import Path
 import re
 import os
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 import json
 from PIL import Image, ImageTk  # For image handling
 from dotenv import load_dotenv
@@ -842,7 +842,10 @@ class ClientGeneratorGUI:
         output_columns = ["Part Number", "Status Code", "Exists"]
         
         for item in self.fields_tree.get_children():
-            field_name, css_selector, transform = self.fields_tree.item(item, 'values')
+            values = self.fields_tree.item(item, 'values')
+            if not values or len(values) < 3:
+                continue
+            field_name, css_selector, transform = values
             
             transform_func = f"TRANSFORM_FUNCTIONS['{transform}']" if transform != "none" else "None"
             
@@ -1072,7 +1075,10 @@ def {register_func_name}():
         }
         
         for item in self.fields_tree.get_children():
-            field_name, css_selector, transform = self.fields_tree.item(item, 'values')
+            values = self.fields_tree.item(item, 'values')
+            if not values or len(values) < 3:
+                continue
+            field_name, css_selector, transform = values
             template_data['fields'].append({
                 'name': field_name,
                 'selector': css_selector,
@@ -1089,7 +1095,7 @@ def {register_func_name}():
             Path(filename).write_text(json.dumps(template_data, indent=2))
             messagebox.showinfo("Success", f"Template saved to {filename}")
     
-    def load_template(self):
+    def load_template(self) -> None:
         """Load configuration from a template."""
         filename = filedialog.askopenfilename(
             filetypes=[('JSON files', '*.json'), ('All files', '*.*')],
@@ -1209,7 +1215,7 @@ def {register_func_name}():
         except Exception as e:
             print(f"Warning: Could not refresh field mappings display: {e}")
 
-    def browse_input_file(self):
+    def browse_input_file(self) -> None:
         """Browse for input CSV file."""
         filename = filedialog.askopenfilename(
             title="Select Input CSV File",
@@ -1218,7 +1224,7 @@ def {register_func_name}():
         if filename:
             self.input_file_var.set(filename)
     
-    def browse_output_file(self):
+    def browse_output_file(self) -> None:
         """Browse for output CSV file."""
         filename = filedialog.asksaveasfilename(
             title="Select Output CSV File",
@@ -1228,7 +1234,7 @@ def {register_func_name}():
         if filename:
             self.output_file_var.set(filename)
     
-    def start_scraping(self):
+    def start_scraping(self) -> None:
         """Start the scraping process."""
         # Validate inputs
         if not self.input_file_var.get():
@@ -1422,7 +1428,7 @@ def {register_func_name}():
         except Exception:
             pass
     
-    def setup_color_tags(self):
+    def setup_color_tags(self) -> None:
         """Set up color tags for terminal-like output."""
         # Rich color mapping for terminal display
         color_mapping = {
@@ -1469,7 +1475,7 @@ def {register_func_name}():
         self.log_text.tag_configure('table_row', foreground='#CCCCCC')
         self.log_text.tag_configure('black', foreground='#000000')
 
-    def log_message(self, message, style=None):
+    def log_message(self, message: str, style: Optional[str] = None) -> None:
         """Add message to log area with optional styling."""
         # Insert message with timestamp
         import datetime
@@ -1734,7 +1740,7 @@ def {register_func_name}():
         self.log_text.see(tk.END)
         self.root.update_idletasks()
 
-    def detect_content_style(self, text):
+    def detect_content_style(self, text: str) -> Optional[str]:
         """Detect appropriate style based on text content."""
         if any(indicator in text for indicator in ["✅", "Success"]):
             return 'success'
@@ -1827,7 +1833,7 @@ def {register_func_name}():
             elif part:  # Non-empty text part
                 self.insert_styled_text(part, current_styles)
     
-    def insert_styled_text(self, text, styles):
+    def insert_styled_text(self, text: str, styles: Union[str, List[str], None]) -> None:
         """Insert text with given styles."""
         if not text:  # Don't process empty text
             return
@@ -1841,7 +1847,7 @@ def {register_func_name}():
             # Insert text without styles
             self.log_text.insert(tk.END, text)
 
-    def add_terminal_welcome(self):
+    def add_terminal_welcome(self) -> None:
         """Add a terminal-like welcome message."""
         welcome_text = """╔══════════════════════════════════════════════════════════════════╗
 ║                    Generic Scraper Terminal                      ║
