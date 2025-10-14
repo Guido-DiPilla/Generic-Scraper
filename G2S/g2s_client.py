@@ -4,18 +4,18 @@ Defines the scraping configuration for G2S (g2stobeq.ca) website.
 """
 
 try:
-    from ..client_config import ClientConfig, FieldMapping, registry, TRANSFORM_FUNCTIONS
+    from ..client_config import TRANSFORM_FUNCTIONS, ClientConfig, FieldMapping, registry
 except ImportError:
     # Fallback for direct execution
     import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent.parent))
-    from client_config import ClientConfig, FieldMapping, registry, TRANSFORM_FUNCTIONS
+    from client_config import TRANSFORM_FUNCTIONS, ClientConfig, FieldMapping, registry
 
 
 def create_g2s_config() -> ClientConfig:
     """Create and return G2S client configuration."""
-    
+
     # Define field mappings for G2S-specific data extraction
     field_mappings = {
         # Basic product info
@@ -30,21 +30,21 @@ def create_g2s_config() -> ClientConfig:
             attribute="data-product-price",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
-        
+
         # Inventory levels
         "Montreal": FieldMapping(
             css_selector="dt:-soup-contains('stock-montreal:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
         "Mississauga": FieldMapping(
-            css_selector="dt:-soup-contains('stock-mississauga:') + dd", 
+            css_selector="dt:-soup-contains('stock-mississauga:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
         "Edmonton": FieldMapping(
             css_selector="dt:-soup-contains('stock-edmonton:') + dd",
             transform_func=TRANSFORM_FUNCTIONS['extract_numeric']
         ),
-        
+
         # Product flags
         "Dropship Item": FieldMapping(
             css_selector="dt:-soup-contains('Dropship Item:') + dd",
@@ -67,15 +67,15 @@ def create_g2s_config() -> ClientConfig:
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
     }
-    
+
     # Define output columns in desired order
     output_columns = [
         "Part Number",
-        "Status Code", 
+        "Status Code",
         "Exists",
         "Price",
         "Montreal",
-        "Mississauga", 
+        "Mississauga",
         "Edmonton",
         "Dropship Item",
         "LTL - Freight Extra",
@@ -85,7 +85,7 @@ def create_g2s_config() -> ClientConfig:
         "In Stock",
         "Status",
     ]
-    
+
     return ClientConfig(
         client_id="g2s",
         client_name="G2S Equipment",

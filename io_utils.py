@@ -59,9 +59,9 @@ def save_results_atomic(
         raise ParseError(f"Failed to save results atomically: {safe_msg}") from e
 
 def generate_summary_report(
-    results: list[dict[str, str]], 
-    elapsed: float, 
-    input_file: Union[str, Path, None] = None, 
+    results: list[dict[str, str]],
+    elapsed: float,
+    input_file: Union[str, Path, None] = None,
     output_file: Union[str, Path, None] = None
 ) -> str:
     """
@@ -73,14 +73,14 @@ def generate_summary_report(
     failed = sum(1 for r in results if r.get("Status") == "Failed")
     not_found = sum(1 for r in results if r.get("Status") == "Not Found")
     no_match = sum(1 for r in results if r.get("Status") == "No Exact Match")
-    
+
     # Build the summary with optional file information
     summary = (
         f"All items processed. Total: {total}. Success: {success}. Failed: {failed}. "
         f"Not Found: {not_found}. No Exact Match: {no_match}. "
         f"Total elapsed time: {elapsed:.2f} seconds."
     )
-    
+
     # Add file information if provided
     if input_file or output_file:
         summary += "\n\nFile Information:"
@@ -92,7 +92,7 @@ def generate_summary_report(
             # Extract just the filename from the path
             output_filename = Path(output_file).name if output_file else output_file
             summary += f'\n- Output file: "{output_filename}"'
-    
+
     return summary
 
 # TODO: Add support for reading/writing other formats (e.g., Excel, JSON) as needed.

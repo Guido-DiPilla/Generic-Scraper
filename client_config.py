@@ -18,10 +18,9 @@ Extensibility:
 - Field mappings are flexible and can be extended per client
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Callable, Any
-from abc import ABC, abstractmethod
 import re
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
 
 @dataclass(frozen=True)
@@ -38,54 +37,54 @@ class FieldMapping:
 @dataclass(frozen=True)
 class ClientConfig:
     """Configuration for a specific scraping client/website."""
-    
+
     # Client identification
     client_id: str
     client_name: str
     description: str
-    
+
     # URLs and search configuration
     base_url: str
     search_endpoint: str
     search_param_name: str  # e.g., 'search_query', 'q', 'term'
-    
+
     # Two-stage scraping (search -> product detail)
     product_link_selector: str  # CSS selector to find product links
     product_link_attribute: str = "href"  # attribute containing product URL
-    
+
     # Field mappings for data extraction
     field_mappings: Dict[str, FieldMapping] = field(default_factory=dict)
-    
+
     # Validation and normalization
     part_number_regex: str = r'^[\w\-/\.]{1,64}$'
     normalize_part_number: bool = True  # Remove dashes, convert to lowercase
     exact_match_required: bool = True
-    
+
     # Optional custom parser function
     custom_parser: Optional[Callable[..., Any]] = None
-    
+
     # Output column names (in desired order)
     output_columns: List[str] = field(default_factory=list)
 
 
 class ClientRegistry:
     """Registry of available scraping clients."""
-    
+
     def __init__(self) -> None:
         self._clients: Dict[str, ClientConfig] = {}
-    
+
     def register(self, config: ClientConfig) -> None:
         """Register a new client configuration."""
         self._clients[config.client_id] = config
-    
+
     def get_client(self, client_id: str) -> Optional[ClientConfig]:
         """Get client configuration by ID."""
         return self._clients.get(client_id)
-    
+
     def list_clients(self) -> List[ClientConfig]:
         """Get all registered clients."""
         return list(self._clients.values())
-    
+
     def get_client_ids(self) -> List[str]:
         """Get list of all client IDs."""
         return list(self._clients.keys())
@@ -104,7 +103,7 @@ def extract_numeric_value(text: str) -> str:
     """Extract numeric value from text (useful for prices, quantities)."""
     if not text or text == "Not found":
         return "Not found"
-    
+
     # Look for numeric patterns (including decimals)
     match = re.search(r'[\d,]+\.?\d*', text.replace(',', ''))
     return match.group(0) if match else "Not found"

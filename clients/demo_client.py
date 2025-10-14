@@ -7,18 +7,18 @@ with basic search and product detail pages.
 """
 
 try:
-    from ..client_config import ClientConfig, FieldMapping, registry, TRANSFORM_FUNCTIONS
+    from ..client_config import TRANSFORM_FUNCTIONS, ClientConfig, FieldMapping, registry
 except ImportError:
     # Fallback for direct execution
     import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent.parent))
-    from client_config import ClientConfig, FieldMapping, registry, TRANSFORM_FUNCTIONS
+    from client_config import TRANSFORM_FUNCTIONS, ClientConfig, FieldMapping, registry
 
 
 def create_demo_config() -> ClientConfig:
     """Create a demo client configuration for testing purposes."""
-    
+
     field_mappings = {
         "Status Code": FieldMapping(default_value="200"),
         "Exists": FieldMapping(default_value="No"),
@@ -35,17 +35,17 @@ def create_demo_config() -> ClientConfig:
             transform_func=TRANSFORM_FUNCTIONS['clean_text']
         ),
     }
-    
+
     output_columns = [
-        "Part Number", 
+        "Part Number",
         "Status Code",
         "Exists",
-        "Price", 
+        "Price",
         "Title",
         "Stock",
         "Status"
     ]
-    
+
     return ClientConfig(
         client_id="demo",
         client_name="Demo Client",

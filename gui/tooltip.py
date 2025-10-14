@@ -4,14 +4,14 @@ Provides hover tooltips for better user experience.
 """
 
 import tkinter as tk
-from typing import Optional, Any
+from typing import Any, Optional
 
 
 class ToolTip:
     """
     Create a tooltip for a given widget with proper type safety.
     """
-    
+
     def __init__(self, widget: tk.Widget, text: str = 'widget info') -> None:
         self.widget = widget
         self.text = text
@@ -31,18 +31,18 @@ class ToolTip:
                     x, y = 0, 0
             else:
                 x, y = 0, 0
-        except:
+        except Exception:
             # For other widgets, use widget position
             x, y = 0, 0
-        
+
         x += self.widget.winfo_rootx() + 25
         y += self.widget.winfo_rooty() + 20
-        
+
         # Create tooltip window
         self.tooltip_window = tw = tk.Toplevel(self.widget)
         tw.wm_overrideredirect(True)
         tw.wm_geometry(f"+{x}+{y}")
-        
+
         label = tk.Label(tw, text=self.text, justify='left',
                         background="#ffffe0", foreground="#000000",
                         relief='solid', borderwidth=1,

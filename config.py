@@ -53,7 +53,7 @@ def get_config() -> ScraperConfig:
     # Default column names - will be overridden by client-specific configurations
     default_columns: list[str] = [
         "Part Number",
-        "Status Code", 
+        "Status Code",
         "Exists",
         "Price",
         "In Stock",
@@ -83,7 +83,7 @@ def get_config() -> ScraperConfig:
     else:
         # Proxy credentials found - enable proxy by default
         print(f"Proxy enabled: {proxy_host}")
-    
+
     # For mandatory proxy mode (uncomment if needed):
     # missing = []
     # if not proxy_username:

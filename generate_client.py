@@ -12,11 +12,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 try:
     from client_generator import main
-    
+
     if __name__ == "__main__":
         print("🚀 Launching Generic Scraper - Client Generator...")
         main()
-        
+
 except ImportError as e:
     print(f"❌ Error importing client generator: {e}")
     print("Make sure you're running this from the scraper directory.")

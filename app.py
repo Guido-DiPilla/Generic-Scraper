@@ -16,9 +16,12 @@ import typer
 from rich.progress import Progress
 from rich.table import Table
 
+from client_config import registry
+
 # Direct imports - app.py is run as script by GUI subprocess
 from config import get_config
 from email_utils import send_email
+from generic_scraper import process_part_number_generic
 from io_utils import (
     generate_summary_report,
     read_part_numbers_in_chunks,
@@ -27,11 +30,7 @@ from io_utils import (
     validate_output_schema,
 )
 from log_utils import mask_secrets, setup_logging
-from generic_scraper import process_part_number_generic
 from ui import console
-from client_config import registry
-import clients  # This registers all available clients
-import G2S     # This registers G2S client from separate folder
 
 app = typer.Typer()
 
@@ -54,14 +53,14 @@ def main(
     config = get_config()
     if log_level:
         config = config.__class__(**{**config.__dict__, 'log_level': log_level})
-    
+
     # Client selection - parameter is now required by typer
     client_config = registry.get_client(client)
     if not client_config:
         available_clients = registry.get_client_ids()
         console.print(f"[red]Client '{client}' not found. Available clients: {', '.join(available_clients)}[/red]")
         raise typer.Exit(1)
-                    
+
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
 
     # Proxy connectivity test - run when proxy is configured
@@ -70,7 +69,7 @@ def main(
         if not config.proxy_username or not config.proxy_password:
             console.print("[yellow]Skipping proxy test - no proxy credentials configured[/yellow]")
             return
-            
+
         console.print(f"[cyan]Testing proxy connection: {config.proxy_host}[/cyan]")
         test_url = "https://ipapi.co/json/"  # HTTPS to avoid plaintext
         import random as _random
@@ -88,7 +87,7 @@ def main(
                         if resp.status == 200:
                             data = await resp.json()
                             console.print("[green]✅ Proxy test successful![/green]")
-                            
+
                             # Display comprehensive proxy information
                             console.print("[cyan]Proxy Connection Details:[/cyan]")
                             console.print(f"  🌐 External IP: [bold blue]{data.get('ip', 'unknown')}[/bold blue]")
@@ -96,13 +95,13 @@ def main(
                             console.print(f"  🏢 ISP: [magenta]{data.get('org', 'unknown')}[/magenta]")
                             console.print(f"  🌍 Country Code: [green]{data.get('country_code', 'unknown')}[/green]")
                             console.print(f"  ⏰ Timezone: [cyan]{data.get('timezone', 'unknown')}[/cyan]")
-                            
+
                             # Show additional fields if available
                             if data.get('postal'):
                                 console.print(f"  📮 Postal Code: [dim]{data.get('postal')}[/dim]")
                             if data.get('latitude') and data.get('longitude'):
                                 console.print(f"  🗺️  Coordinates: [dim]{data.get('latitude')}, {data.get('longitude')}[/dim]")
-                            
+
                             # Create a compact summary of key fields
                             key_fields = {
                                 'ip': data.get('ip'),
@@ -206,7 +205,7 @@ def main(
                     processed = {
                         str(item.get("Part Number"))
                         for item in data_prev
-                        if isinstance(item, dict) 
+                        if isinstance(item, dict)
                         and item.get("Part Number")
                         and item.get("Status") not in ["FetchError", "Error"]
                     }
@@ -390,9 +389,9 @@ def main(
         asyncio.run(run_all())
 
         summary = generate_summary_report(
-            all_results, 
-            time.time() - start_time, 
-            input_file=input_csv, 
+            all_results,
+            time.time() - start_time,
+            input_file=input_csv,
             output_file=output_csv
         )
         safe_summary = mask_secrets(str(summary))

@@ -3,19 +3,19 @@ GUI components package for Generic Scraper.
 Provides modular GUI components for better code organization.
 """
 
-from .tooltip import ToolTip
-from .field_dialog import FieldMappingDialog
-from .scraper_tab import ScraperTab
-from .config_tabs import BasicTab, WebsiteTab, FieldsTab, AdvancedTab, PreviewTab
 from .client_generation import ClientGenerator, FileManager
+from .config_tabs import AdvancedTab, BasicTab, FieldsTab, PreviewTab, WebsiteTab
+from .field_dialog import FieldMappingDialog
 from .output_formatting import OutputFormatter, ProgressTracker
+from .scraper_tab import ScraperTab
+from .tooltip import ToolTip
 
 __all__ = [
     'ToolTip',
-    'FieldMappingDialog', 
+    'FieldMappingDialog',
     'ScraperTab',
     'BasicTab',
-    'WebsiteTab', 
+    'WebsiteTab',
     'FieldsTab',
     'AdvancedTab',
     'PreviewTab',

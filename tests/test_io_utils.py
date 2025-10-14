@@ -60,11 +60,11 @@ def test_generate_summary_report() -> None:
     assert "No Exact Match: 1" in summary
     assert "12.50 seconds" in summary
     assert "File Information:" not in summary
-    
+
     # Test with file names
     summary_with_files = generate_summary_report(
-        results, 12.5, 
-        input_file="input.csv", 
+        results, 12.5,
+        input_file="input.csv",
         output_file="output.csv"
     )
     assert "Total: 5" in summary_with_files

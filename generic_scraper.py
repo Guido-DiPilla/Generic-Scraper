@@ -22,16 +22,17 @@ Maintainability:
 import asyncio
 import logging
 import random
-from typing import Optional, Dict, Any
 import re
+from typing import Dict, Optional
 
 import aiohttp
 from bs4 import BeautifulSoup, Tag
 
+from client_config import ClientConfig, FieldMapping, normalize_part_number
+
 # Direct imports - used by app.py subprocess
 from exceptions import FetchError
 from log_utils import mask_secrets
-from client_config import ClientConfig, FieldMapping, normalize_part_number
 
 USER_AGENT = "Mozilla/5.0"
 
@@ -88,17 +89,17 @@ async def fetch(
 def extract_field_value(soup: BeautifulSoup, field_mapping: FieldMapping) -> str:
     """
     Extract a field value from HTML using the field mapping configuration.
-    
+
     Args:
         soup: BeautifulSoup parsed HTML
         field_mapping: Configuration for how to extract this field
-        
+
     Returns:
         Extracted and transformed field value or default_value
     """
     try:
         value = field_mapping.default_value
-        
+
         # Extract raw value using CSS selector
         if field_mapping.css_selector:
             elements = soup.select(field_mapping.css_selector)
@@ -111,18 +112,18 @@ def extract_field_value(soup: BeautifulSoup, field_mapping: FieldMapping) -> str
                 else:
                     # Extract text content
                     value = element.get_text(strip=True) if hasattr(element, 'get_text') else str(element)
-        
+
         # Apply regex pattern if specified
         if field_mapping.regex_pattern and value != field_mapping.default_value:
             match = re.search(field_mapping.regex_pattern, str(value))
             value = match.group(1) if match and match.groups() else field_mapping.default_value
-        
+
         # Apply transform function if specified
         if field_mapping.transform_func and value != field_mapping.default_value:
             value = field_mapping.transform_func(str(value))
-            
+
         return str(value) if value is not None else field_mapping.default_value
-        
+
     except Exception as e:
         logging.warning(f"Error extracting field: {mask_secrets(str(e))}")
         return field_mapping.default_value
@@ -142,17 +143,17 @@ def check_exact_match(part_number: str, soup: BeautifulSoup, config: ClientConfi
     """
     if not config.exact_match_required:
         return True
-        
+
     # Normalize the input part number
     normalized_input = normalize_part_number(part_number) if config.normalize_part_number else part_number.lower()
-    
+
     # Check product title
     title_element = soup.find("h1", class_="productView-title")
     if title_element and hasattr(title_element, "text"):
         normalized_title = normalize_part_number(title_element.text) if config.normalize_part_number else title_element.text.lower()
         if normalized_input == normalized_title:
             return True
-    
+
     # Check SKU in product view
     sku_div = soup.find("div", class_="productView-sku")
     if sku_div and isinstance(sku_div, Tag):
@@ -161,7 +162,7 @@ def check_exact_match(part_number: str, soup: BeautifulSoup, config: ClientConfi
             normalized_sku = normalize_part_number(sku_span.text) if config.normalize_part_number else sku_span.text.lower()
             if normalized_input == normalized_sku:
                 return True
-    
+
     return False
 
 
@@ -176,7 +177,7 @@ async def process_part_number_generic(
 ) -> Dict[str, str]:
     """
     Generic scraper that processes a part number using client configuration.
-    
+
     Args:
         session: aiohttp ClientSession
         part_number: The part number to search for
@@ -185,25 +186,25 @@ async def process_part_number_generic(
         proxy_url: Optional proxy URL
         proxy_auth: Optional proxy authentication
         request_delay_s: Delay between requests
-        
+
     Returns:
         Dictionary of extracted data and status fields
     """
-    
+
     # Initialize result with part number and default status
     result: Dict[str, str] = {"Part Number": part_number, "Status": "Failed"}
-    
+
     async with semaphore:
         try:
             # Validate part number format
             if not validate_part_number(part_number, client_config):
                 result["Status"] = "Invalid Part Number"
                 return result
-            
+
             # Stage 1: Search for the part number
             search_url = f"{client_config.base_url}{client_config.search_endpoint}"
             search_params = {client_config.search_param_name: part_number}
-            
+
             text, status = await fetch(
                 session,
                 search_url,
@@ -212,37 +213,37 @@ async def process_part_number_generic(
                 proxy_auth=proxy_auth,
                 request_delay_s=request_delay_s,
             )
-            
+
             if status != 200 or not text:
                 result["Status"] = "Search Failed"
                 result["Status Code"] = str(status) if status else "Unknown"
                 return result
-            
+
             # Parse search results and find product link
             soup = BeautifulSoup(text, "html.parser")
             product_link_element = soup.select_one(client_config.product_link_selector)
-            
+
             if not product_link_element:
                 result["Status"] = "Not Found"
                 result["Status Code"] = str(status)
                 return result
-            
+
             # Extract product URL
             product_url_raw = product_link_element.get(client_config.product_link_attribute)
             if not product_url_raw:
                 result["Status"] = "Product URL Not Found"
                 result["Status Code"] = str(status)
                 return result
-            
+
             # Ensure we have a string URL (handle cases where get() returns a list)
             product_url = str(product_url_raw) if not isinstance(product_url_raw, str) else product_url_raw
-            
+
             # Handle relative URLs
             if product_url.startswith('/'):
                 product_url = f"{client_config.base_url}{product_url}"
             elif not product_url.startswith('http'):
                 product_url = f"{client_config.base_url}/{product_url}"
-            
+
             # Stage 2: Fetch product details
             text, status = await fetch(
                 session,
@@ -251,46 +252,46 @@ async def process_part_number_generic(
                 proxy_auth=proxy_auth,
                 request_delay_s=request_delay_s,
             )
-            
+
             if status != 200 or not text:
                 result["Status"] = "Product Fetch Failed"
                 result["Status Code"] = str(status) if status else "Unknown"
                 return result
-            
+
             # Parse product page
             soup = BeautifulSoup(text, "html.parser")
             result["Status Code"] = str(status)
-            
+
             # Check for exact match if required
             if client_config.exact_match_required:
                 if not check_exact_match(part_number, soup, client_config):
                     result["Status"] = "No Exact Match"
                     result["Exists"] = "No"
                     return result
-            
+
             result["Exists"] = "Yes"
-            
+
             # Extract all configured fields
             for field_name, field_mapping in client_config.field_mappings.items():
                 if field_name not in result:  # Don't override Status Code, etc.
                     result[field_name] = extract_field_value(soup, field_mapping)
-            
+
             # Calculate derived fields (like "In Stock" from inventory levels)
             calculate_derived_fields(result, client_config)
-            
+
             # Determine final status based on extracted data
             if result.get("Price", "Not found") != "Not found":
                 result["Status"] = "Success"
             else:
                 result["Status"] = "Price Not Found"
-                
+
         except FetchError as fe:
             result["Status"] = "FetchError"
             result["Error"] = mask_secrets(str(fe))
         except Exception as e:
             result["Status"] = "Error"
             result["Error"] = mask_secrets(str(e))
-    
+
     return result
 
 
@@ -302,7 +303,7 @@ def calculate_derived_fields(result: Dict[str, str], config: ClientConfig) -> No
     # Generic "In Stock" calculation from inventory fields
     inventory_fields = ["Montreal", "Mississauga", "Edmonton"]  # Common inventory locations
     in_stock_locations = []
-    
+
     for location in inventory_fields:
         if location in result:
             qty_str = result[location]
@@ -311,7 +312,7 @@ def calculate_derived_fields(result: Dict[str, str], config: ClientConfig) -> No
                     in_stock_locations.append(location)
             except (ValueError, TypeError):
                 pass  # Invalid quantity format
-    
+
     result["In Stock"] = ", ".join(in_stock_locations) if in_stock_locations else "Not found"
 
 
@@ -337,7 +338,7 @@ async def process_part_number(
         except ImportError:
             from G2S.g2s_client import create_g2s_config
             client_config = create_g2s_config()
-    
+
     # At this point, client_config is guaranteed to be not None
     assert client_config is not None, "Client config should be set by now"
     return await process_part_number_generic(
