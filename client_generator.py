@@ -24,17 +24,24 @@ class ToolTip:
     """
     Create a tooltip for a given widget
     """
-    def __init__(self, widget, text='widget info'):
+    def __init__(self, widget: tk.Widget, text: str = 'widget info') -> None:
         self.widget = widget
         self.text = text
         self.widget.bind("<Enter>", self.enter)
         self.widget.bind("<Leave>", self.leave)
-        self.tooltip_window = None
+        self.tooltip_window: Optional[tk.Toplevel] = None
 
-    def enter(self, event=None):
+    def enter(self, event: Optional[tk.Event] = None) -> None:
         try:
             # Try to get cursor position (works for text widgets)
-            x, y, cx, cy = self.widget.bbox("insert")
+            if hasattr(self.widget, 'bbox'):
+                bbox = self.widget.bbox("insert")  # type: ignore
+                if bbox:
+                    x, y, cx, cy = bbox
+                else:
+                    x, y = 0, 0
+            else:
+                x, y = 0, 0
         except:
             # For other widgets, use widget position
             x, y = 0, 0
@@ -53,7 +60,7 @@ class ToolTip:
                         font=("Arial", 8), wraplength=300)
         label.pack(ipadx=5, ipady=3)
 
-    def leave(self, event=None):
+    def leave(self, event: Optional[tk.Event] = None) -> None:
         if self.tooltip_window:
             self.tooltip_window.destroy()
         self.tooltip_window = None
@@ -1184,15 +1191,21 @@ def {register_func_name}():
         except Exception as e:
             self.log_message(f"❌ Error loading client configuration: {str(e)}", 'error')
 
-    def refresh_field_mappings_display(self):
+    def refresh_field_mappings_display(self) -> None:
         """Refresh the field mappings display with loaded data."""
         try:
-            # If we have a field mappings listbox, update it
-            if hasattr(self, 'mappings_listbox'):
-                self.mappings_listbox.delete(0, tk.END)
-                for i, mapping in enumerate(self.field_mappings):
-                    display_text = f"{mapping['name']} -> {mapping['selector'] or mapping['attribute'] or 'default'}"
-                    self.mappings_listbox.insert(tk.END, display_text)
+            # If we have a field mappings treeview, update it
+            if hasattr(self, 'fields_tree'):
+                # Clear existing items
+                for item in self.fields_tree.get_children():
+                    self.fields_tree.delete(item)
+                
+                # Add field mappings from loaded configuration
+                for mapping in getattr(self, 'field_mappings', []):
+                    field_name = mapping.get('name', '')
+                    selector = mapping.get('selector', '')
+                    transform = 'clean_text'  # Default transform
+                    self.fields_tree.insert('', 'end', values=(field_name, selector, transform))
         except Exception as e:
             print(f"Warning: Could not refresh field mappings display: {e}")
 

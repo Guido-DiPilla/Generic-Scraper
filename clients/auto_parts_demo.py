@@ -61,8 +61,8 @@ def create_auto_parts_demo_config() -> ClientConfig:
     )
 
 
-def register_auto_parts_demo():
-    """Register Auto Parts Demo client."""
+def register_auto_parts_demo() -> None:
+    """Register the auto parts demo client in the global registry."""
     config = create_auto_parts_demo_config()
     registry.register(config)
 

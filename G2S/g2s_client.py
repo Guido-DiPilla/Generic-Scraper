@@ -104,7 +104,7 @@ def create_g2s_config() -> ClientConfig:
     )
 
 
-def register_g2s_client():
+def register_g2s_client() -> None:
     """Register G2S client in the global registry."""
     config = create_g2s_config()
     registry.register(config)

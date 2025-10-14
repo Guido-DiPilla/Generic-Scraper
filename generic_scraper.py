@@ -106,7 +106,8 @@ def extract_field_value(soup: BeautifulSoup, field_mapping: FieldMapping) -> str
                 element = elements[0]
                 if field_mapping.attribute:
                     # Extract from attribute
-                    value = element.get(field_mapping.attribute, field_mapping.default_value)
+                    attr_value = element.get(field_mapping.attribute, field_mapping.default_value)
+                    value = str(attr_value) if attr_value is not None else field_mapping.default_value
                 else:
                     # Extract text content
                     value = element.get_text(strip=True) if hasattr(element, 'get_text') else str(element)
@@ -227,11 +228,14 @@ async def process_part_number_generic(
                 return result
             
             # Extract product URL
-            product_url = product_link_element.get(client_config.product_link_attribute)
-            if not product_url:
+            product_url_raw = product_link_element.get(client_config.product_link_attribute)
+            if not product_url_raw:
                 result["Status"] = "Product URL Not Found"
                 result["Status Code"] = str(status)
                 return result
+            
+            # Ensure we have a string URL (handle cases where get() returns a list)
+            product_url = str(product_url_raw) if not isinstance(product_url_raw, str) else product_url_raw
             
             # Handle relative URLs
             if product_url.startswith('/'):
@@ -334,6 +338,8 @@ async def process_part_number(
             from G2S.g2s_client import create_g2s_config
             client_config = create_g2s_config()
     
+    # At this point, client_config is guaranteed to be not None
+    assert client_config is not None, "Client config should be set by now"
     return await process_part_number_generic(
         session=session,
         part_number=part_number,

@@ -73,8 +73,8 @@ def create_electronics_supplier_config() -> ClientConfig:
     )
 
 
-def register_electronics_supplier():
-    """Register electronics supplier client."""
+def register_electronics_supplier() -> None:
+    """Register Electronics Supplier client in the global registry."""
     config = create_electronics_supplier_config()
     registry.register(config)
 

@@ -115,7 +115,7 @@ def create_example_config() -> ClientConfig:
     )
 
 
-def register_example_client():
+def register_example_client() -> None:
     """Register the example client in the global registry."""
     config = create_example_config() 
     registry.register(config)

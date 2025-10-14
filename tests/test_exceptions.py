@@ -2,7 +2,11 @@
 Unit tests for exceptions.py
 """
 import pytest
-from modern_refactored.exceptions import ScraperError, ConfigError, ProxyError, FetchError, ParseError, EmailError
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from exceptions import ScraperError, ConfigError, ProxyError, FetchError, ParseError, EmailError
 
 def test_scraper_error():
     with pytest.raises(ScraperError):

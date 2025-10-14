@@ -62,7 +62,7 @@ class ClientConfig:
     exact_match_required: bool = True
     
     # Optional custom parser function
-    custom_parser: Optional[Callable] = None
+    custom_parser: Optional[Callable[..., Any]] = None
     
     # Output column names (in desired order)
     output_columns: List[str] = field(default_factory=list)
@@ -71,7 +71,7 @@ class ClientConfig:
 class ClientRegistry:
     """Registry of available scraping clients."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._clients: Dict[str, ClientConfig] = {}
     
     def register(self, config: ClientConfig) -> None:

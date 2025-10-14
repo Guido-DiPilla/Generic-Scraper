@@ -51,8 +51,8 @@ def create_test_supplier_config() -> ClientConfig:
     )
 
 
-def register_test_supplier():
-    """Register Test Supplier client."""
+def register_test_supplier() -> None:
+    """Register the test supplier client in the global registry."""
     config = create_test_supplier_config()
     registry.register(config)
 

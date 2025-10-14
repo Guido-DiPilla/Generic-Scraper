@@ -63,8 +63,8 @@ def create_demo_config() -> ClientConfig:
     )
 
 
-def register_demo_client():
-    """Register demo client in the global registry."""
+def register_demo_client() -> None:
+    """Register Demo client in the global registry."""
     config = create_demo_config()
     registry.register(config)
 

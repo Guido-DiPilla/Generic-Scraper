@@ -5,12 +5,15 @@ Unit tests for io_utils.py
 import pytest
 from pathlib import Path
 import pandas as pd
-from modern_refactored.io_utils import read_part_numbers_in_chunks, save_results_atomic, validate_input_schema, validate_output_schema, generate_summary_report
-from modern_refactored.exceptions import ParseError
 import tempfile
 import os
+import sys
 
-from pathlib import Path
+# Add parent directory to path to import modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from io_utils import read_part_numbers_in_chunks, save_results_atomic, validate_input_schema, validate_output_schema, generate_summary_report
+from exceptions import ParseError
 def test_read_part_numbers_in_chunks(tmp_path: Path) -> None:
     # Create a sample CSV
     csv_path = tmp_path / "input.csv"

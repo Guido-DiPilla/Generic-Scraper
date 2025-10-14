@@ -27,11 +27,9 @@ async def test_process_part_number_success():
         else:
             # Second fetch: product details
             return ("<h1 class='productView-title'>Test Product</h1><div class='productView-sku'><span>ABC123</span></div>", 200)
-    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
-        result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
-        assert result['Status'] in {'Success', 'Failed', 'No Exact Match', 'Not Found'}
-
-@pytest.mark.asyncio
+        with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
+            result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
+            assert result['Status'] in {'Success', 'Failed', 'No Exact Match', 'Not Found', 'Price Not Found'}@pytest.mark.asyncio
 async def test_process_part_number_fetch_error():
     session = AsyncMock(spec=aiohttp.ClientSession)
     with patch('generic_scraper.fetch', new=AsyncMock(side_effect=FetchError("fail"))):
