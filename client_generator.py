@@ -1131,7 +1131,7 @@ def {register_func_name}():
                 
             except Exception as e:
                 messagebox.showerror("Error", f"Error loading template: {str(e)}")
-    def on_client_selected(self, event=None):
+    def on_client_selected(self, event: Optional[Any] = None) -> None:
         """Handle client selection from dropdown - populate configuration fields."""
         try:
             from client_config import registry
@@ -1272,7 +1272,7 @@ def {register_func_name}():
         self.scraping_thread.daemon = True
         self.scraping_thread.start()
     
-    def _run_scraping(self, client_id):
+    def _run_scraping(self, client_id: str) -> None:
         """Run the scraping process in background thread."""
         try:
             import subprocess
@@ -1361,7 +1361,7 @@ def {register_func_name}():
             self.root.after(0, self.log_message, f"Error: {str(e)}")
             self.root.after(0, self.scraping_complete, False)
     
-    def stop_scraping(self):
+    def stop_scraping(self) -> None:
         """Stop the scraping process."""
         if hasattr(self, 'scraping_thread') and self.scraping_thread.is_alive():
             self.log_message("Stopping scraping process...")
@@ -1369,7 +1369,7 @@ def {register_func_name}():
             # you'd want to properly terminate the subprocess
         self.scraping_complete(False)
     
-    def scraping_complete(self, success):
+    def scraping_complete(self, success: bool) -> None:
         """Handle scraping completion."""
         self.start_button.config(state='normal')
         self.stop_button.config(state='disabled')
@@ -1394,7 +1394,7 @@ def {register_func_name}():
             self.log_message("Check the logs above for error details", 'warning')
             self.log_message("─" * 68, 'dim')
     
-    def update_progress_from_line(self, line):
+    def update_progress_from_line(self, line: str) -> None:
         """Update progress bar from log line."""
         try:
             import re
@@ -1493,7 +1493,7 @@ def {register_func_name}():
         self.log_text.see(tk.END)
         self.root.update_idletasks()
 
-    def parse_ansi_codes(self, text):
+    def parse_ansi_codes(self, text: str) -> List[tuple[str, str]]:
         """Parse ANSI escape sequences and return segments with styling."""
         import re
         
@@ -1573,7 +1573,7 @@ def {register_func_name}():
         
         return segments
 
-    def strip_ansi_codes(self, text):
+    def strip_ansi_codes(self, text: str) -> str:
         """Remove all ANSI escape sequences from text."""
         import re
         # Remove all ANSI escape sequences including:
@@ -1590,7 +1590,7 @@ def {register_func_name}():
         clean_text = ansi_escape.sub('', text)
         return clean_text
     
-    def should_display_line(self, text):
+    def should_display_line(self, text: str) -> bool:
         """Determine if a line should be displayed based on content."""
         clean_text = self.strip_ansi_codes(text).strip()
         
@@ -1610,7 +1610,7 @@ def {register_func_name}():
             
         return True
 
-    def parse_rich_markup(self, text):
+    def parse_rich_markup(self, text: str) -> List[tuple[str, Optional[str]]]:
         """Parse Rich-style markup and return segments with styling."""
         import re
         
@@ -1666,7 +1666,7 @@ def {register_func_name}():
         
         return segments
 
-    def log_rich_output(self, text):
+    def log_rich_output(self, text: str) -> None:
         """Parse and display Rich-formatted text with colors and formatting."""
         # Skip lines that shouldn't be displayed
         if not self.should_display_line(text):
@@ -1768,7 +1768,7 @@ def {register_func_name}():
             return 'cyan'
         return None
 
-    def handle_plain_text_with_smart_styling(self, text):
+    def handle_plain_text_with_smart_styling(self, text: str) -> None:
         """Handle plain text with smart content-based styling."""
         # Look for patterns in the text to apply appropriate styling
         import re
@@ -1978,7 +1978,7 @@ Transform Functions:
         self.dialog.destroy()
 
 
-def main():
+def main() -> None:
     """Run the client generator GUI."""
     app = ClientGeneratorGUI()
     app.run()
