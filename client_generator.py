@@ -11,7 +11,7 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 from pathlib import Path
 import re
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import json
 from PIL import Image, ImageTk  # For image handling
 from dotenv import load_dotenv
@@ -31,7 +31,7 @@ class ToolTip:
         self.widget.bind("<Leave>", self.leave)
         self.tooltip_window: Optional[tk.Toplevel] = None
 
-    def enter(self, event: Optional[tk.Event] = None) -> None:
+    def enter(self, event: Optional[Any] = None) -> None:
         try:
             # Try to get cursor position (works for text widgets)
             if hasattr(self.widget, 'bbox'):
@@ -60,14 +60,14 @@ class ToolTip:
                         font=("Arial", 8), wraplength=300)
         label.pack(ipadx=5, ipady=3)
 
-    def leave(self, event: Optional[tk.Event] = None) -> None:
+    def leave(self, event: Optional[Any] = None) -> None:
         if self.tooltip_window:
             self.tooltip_window.destroy()
         self.tooltip_window = None
 
 
 class ClientGeneratorGUI:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("Generic Scraper - Main Application")
         
@@ -88,13 +88,13 @@ class ClientGeneratorGUI:
         self.root.minsize(800, 600)     # Set minimum size
         
         # Client configuration data
-        self.client_data = {}
-        self.field_mappings = []
+        self.client_data: Dict[str, Any] = {}
+        self.field_mappings: List[Dict[str, Any]] = []
         self.logo_image = None  # Store logo image reference
         
         self.setup_ui()
     
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Set up the GUI interface."""
         # Create notebook for tabs
         notebook = ttk.Notebook(self.root)
@@ -134,7 +134,7 @@ class ClientGeneratorGUI:
         # Ensure the first tab (Run Scraper) is selected by default
         notebook.select(0)
     
-    def setup_scraper_tab(self, parent):
+    def setup_scraper_tab(self, parent: ttk.Frame) -> None:
         """Set up the main scraper execution tab."""
         # Title Section
         title_frame = ttk.Frame(parent)
@@ -411,7 +411,7 @@ class ClientGeneratorGUI:
         ttk.Button(button_frame, text="Open Results Folder", 
                   command=self.open_results_folder).pack(side='right', padx=5)
     
-    def setup_basic_tab(self, parent):
+    def setup_basic_tab(self, parent: ttk.Frame) -> None:
         """Set up basic information tab."""
         # Title
         ttk.Label(parent, text="Client Basic Information", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
@@ -448,7 +448,7 @@ class ClientGeneratorGUI:
         self.validation_label = ttk.Label(form_frame, text="", foreground='red')
         self.validation_label.grid(row=3, column=0, columnspan=2, pady=5)
     
-    def setup_website_tab(self, parent):
+    def setup_website_tab(self, parent: ttk.Frame) -> None:
         """Set up website configuration tab."""
         ttk.Label(parent, text="Website Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
         
@@ -516,7 +516,7 @@ class ClientGeneratorGUI:
         ToolTip(normalize_checkbox, "Convert part numbers to standard format before comparing.\nRemoves dashes/spaces and converts to lowercase.\nHelps match 'ABC-123' with 'abc123'.")
         ToolTip(exact_match_checkbox, "Only accept products where the part number exactly matches the search.\nPrevents false positives from similar part numbers.\nRecommended: Keep enabled for accuracy.")
     
-    def setup_fields_tab(self, parent):
+    def setup_fields_tab(self, parent: ttk.Frame) -> None:
         """Set up field mappings tab."""
         ttk.Label(parent, text="Field Mappings Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
         
@@ -566,7 +566,7 @@ class ClientGeneratorGUI:
         # Add some default fields
         self.add_default_fields()
     
-    def setup_advanced_tab(self, parent):
+    def setup_advanced_tab(self, parent: ttk.Frame) -> None:
         """Set up advanced configuration tab."""
         ttk.Label(parent, text="Advanced Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
         
@@ -693,14 +693,14 @@ class ClientGeneratorGUI:
         # Initially disable proxy fields
         self.toggle_proxy_fields()
     
-    def toggle_proxy_fields(self):
+    def toggle_proxy_fields(self) -> None:
         """Enable/disable proxy fields based on checkbox."""
         state = 'normal' if self.use_proxy_var.get() else 'disabled'
         for widget in self.proxy_fields_frame.winfo_children():
             if isinstance(widget, ttk.Entry):
                 widget.configure(state=state)
     
-    def setup_preview_tab(self, parent):
+    def setup_preview_tab(self, parent: ttk.Frame) -> None:
         """Set up preview and generation tab."""
         ttk.Label(parent, text="Preview & Generate Client", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
         
@@ -737,7 +737,7 @@ class ClientGeneratorGUI:
         ToolTip(save_template_btn, "Save current configuration as a reusable template.\nUseful for creating similar clients or backing up configurations.")
         ToolTip(load_template_btn, "Load a previously saved template.\nAutomatically fills in all the form fields with saved values.")
     
-    def validate_client_id(self, *args):
+    def validate_client_id(self, *args: Any) -> None:
         """Validate client ID format."""
         client_id = self.client_id_var.get()
         if not client_id:
@@ -757,7 +757,7 @@ class ClientGeneratorGUI:
             else:
                 self.validation_label.config(text="✓ Client ID is valid", foreground='green')
     
-    def add_default_fields(self):
+    def add_default_fields(self) -> None:
         """Add default field mappings."""
         default_fields = [
             ("Price", ".price, .product-price", "extract_numeric"),
@@ -768,14 +768,14 @@ class ClientGeneratorGUI:
         for field_name, selector, transform in default_fields:
             self.fields_tree.insert('', 'end', values=(field_name, selector, transform))
     
-    def add_field(self):
+    def add_field(self) -> None:
         """Add a new field mapping."""
         dialog = FieldMappingDialog(self.root)
         if dialog.result:
             field_name, css_selector, transform = dialog.result
             self.fields_tree.insert('', 'end', values=(field_name, css_selector, transform))
     
-    def edit_field(self):
+    def edit_field(self) -> None:
         """Edit selected field mapping."""
         selection = self.fields_tree.selection()
         if not selection:
@@ -790,7 +790,7 @@ class ClientGeneratorGUI:
             field_name, css_selector, transform = dialog.result
             self.fields_tree.item(item, values=(field_name, css_selector, transform))
     
-    def remove_field(self):
+    def remove_field(self) -> None:
         """Remove selected field mapping."""
         selection = self.fields_tree.selection()
         if not selection:
@@ -800,7 +800,7 @@ class ClientGeneratorGUI:
         for item in selection:
             self.fields_tree.delete(item)
     
-    def add_common_fields(self):
+    def add_common_fields(self) -> None:
         """Add common field mappings."""
         common_fields = [
             ("Brand", ".brand, .manufacturer", "clean_text"),
@@ -813,7 +813,7 @@ class ClientGeneratorGUI:
         for field_name, selector, transform in common_fields:
             self.fields_tree.insert('', 'end', values=(field_name, selector, transform))
     
-    def update_preview(self):
+    def update_preview(self) -> None:
         """Update the code preview."""
         try:
             code = self.generate_client_code()
@@ -999,7 +999,7 @@ def {register_func_name}():
         
         return code
     
-    def generate_client(self):
+    def generate_client(self) -> None:
         """Generate the client file."""
         try:
             client_id = self.client_id_var.get()
@@ -1025,7 +1025,7 @@ def {register_func_name}():
         except Exception as e:
             messagebox.showerror("Error", f"Error generating client: {str(e)}")
     
-    def update_init_file(self, client_id: str):
+    def update_init_file(self, client_id: str) -> None:
         """Update clients/__init__.py to include the new client."""
         init_file = Path("clients/__init__.py")
         if not init_file.exists():
@@ -1055,7 +1055,7 @@ def {register_func_name}():
         # Write back
         init_file.write_text('\\n'.join(lines))
     
-    def save_template(self):
+    def save_template(self) -> None:
         """Save current configuration as a template."""
         template_data = {
             'client_id': self.client_id_var.get(),

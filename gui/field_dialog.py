@@ -17,7 +17,7 @@ class FieldMappingDialog:
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("Field Mapping")
         self.dialog.geometry("500x300")
-        self.dialog.transient(parent)  # type: ignore
+        self.dialog.transient(parent)
         self.dialog.grab_set()
         
         # Center the dialog

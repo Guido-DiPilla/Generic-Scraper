@@ -96,8 +96,8 @@ class OutputFormatter:
         # ANSI escape code pattern
         ansi_pattern = re.compile(r'\033\[([0-9;]*)m')
         
-        segments = []
-        current_styles = []
+        segments: List[Tuple[str, List[str]]] = []
+        current_styles: List[str] = []
         last_end = 0
         
         for match in ansi_pattern.finditer(text):
@@ -205,7 +205,7 @@ class OutputFormatter:
             r'\[white\](.*?)\[/white\]': ('fg_white',),
         }
         
-        segments = []
+        segments: List[Tuple[str, List[str]]] = []
         remaining_text = text
         
         while remaining_text:
@@ -381,7 +381,7 @@ class ProgressTracker:
     def __init__(self, progress_var: tk.StringVar) -> None:
         self.progress_var = progress_var
         self.current_progress = ""
-        self.last_update_time = 0
+        self.last_update_time = 0.0
         
     def update_progress(self, message: str) -> None:
         """Update progress message with rate limiting."""
