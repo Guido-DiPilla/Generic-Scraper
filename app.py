@@ -10,14 +10,14 @@ import time
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-
 import pandas as pd
 import typer
 from rich.progress import Progress
 from rich.table import Table
-
 from client_config import registry
-
+# Import client modules to trigger auto-registration
+import clients  # This registers demo, electronics_supplier, test_supplier, etc.
+import G2S  # This registers the G2S client
 # Direct imports - app.py is run as script by GUI subprocess
 from config import get_config
 from email_utils import send_email
