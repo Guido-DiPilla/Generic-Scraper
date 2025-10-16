@@ -635,11 +635,13 @@ class ClientGeneratorGUI:
         rate_frame = ttk.LabelFrame(scrollable_frame, text="Rate Limiting & Performance")
         rate_frame.pack(fill='x', padx=20, pady=10)
 
-        # Rate limit
-        ttk.Label(rate_frame, text="Requests per second:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        self.rate_limit_var = tk.StringVar(value="5")
-        rate_limit_entry = ttk.Entry(rate_frame, textvariable=self.rate_limit_var, width=10)
-        rate_limit_entry.grid(row=0, column=1, sticky='w', padx=5)
+        # Request delay (ms)
+        ttk.Label(rate_frame, text="Request Delay (ms):").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        # Initialize from .env or default to 50ms
+        initial_delay = self.get_env_value("REQUEST_DELAY_MS", "50")
+        self.request_delay_ms_var = tk.StringVar(value=initial_delay)
+        request_delay_ms_entry = ttk.Entry(rate_frame, textvariable=self.request_delay_ms_var, width=10)
+        request_delay_ms_entry.grid(row=0, column=1, sticky='w', padx=5)
 
         # Timeout settings
         ttk.Label(rate_frame, text="Request timeout (seconds):").grid(row=1, column=0, sticky='w', pady=5, padx=5)
@@ -659,7 +661,7 @@ class ClientGeneratorGUI:
         max_retries_entry.grid(row=3, column=1, sticky='w', padx=5)
 
         # Add tooltips for rate limiting
-        ToolTip(rate_limit_entry, "Maximum requests per second to avoid overwhelming the server.\nLower values are more polite but slower.\nRecommended: 0.5-2.0")
+        ToolTip(request_delay_ms_entry, "Delay between requests in milliseconds.\nLower values = faster scraping but more aggressive.\nHigher values = slower but more polite.\n50ms ≈ up to 20 requests/sec\n100ms ≈ up to 10 requests/sec\n200ms ≈ up to 5 requests/sec\n1000ms ≈ 1 request/sec")
         ToolTip(request_timeout_entry, "Seconds to wait for each HTTP request before timing out.\nIncrease for slow websites.\nRecommended: 15-60")
         ToolTip(total_timeout_entry, "Maximum seconds to wait for the entire scraping operation.\nPrevents infinite hangs.\nRecommended: 300-3600")
         ToolTip(max_retries_entry, "How many times to retry failed requests.\nHigher values improve reliability but slow down errors.\nRecommended: 2-5")
@@ -940,12 +942,17 @@ def {func_name}() -> ClientConfig:
     # Advanced configuration
     advanced_config = {{}}
 
-    # Rate limiting and performance settings
-    if hasattr(self, 'rate_limit_var') and self.rate_limit_var.get():
+    # Request delay settings
+    if hasattr(self, 'request_delay_ms_var') and self.request_delay_ms_var.get():
         try:
-            rate_limit = float(self.rate_limit_var.get())
-            if rate_limit != 1.0:
+            request_delay_ms = int(self.request_delay_ms_var.get())
+            # Calculate equivalent rate_limit for backward compatibility
+            # rate_limit is requests per second, so 1000/delay_ms
+            if request_delay_ms > 0:
+                rate_limit = 1000 / request_delay_ms
                 advanced_config['rate_limit'] = rate_limit
+                # Also store the actual delay value
+                advanced_config['request_delay_ms'] = request_delay_ms
         except ValueError:
             pass
 
@@ -1083,12 +1090,12 @@ def {register_func_name}():
             return
 
         content = init_file.read_text()
+        lines = content.split('\\n')
 
         # Add import
         import_line = f"    from .{client_id} import register_{client_id}"
         if import_line not in content:
             # Find the imports section and add the new import
-            lines = content.split('\\n')
             for i, line in enumerate(lines):
                 if "# Add your new clients here:" in line:
                     lines.insert(i, import_line)
@@ -1097,7 +1104,6 @@ def {register_func_name}():
         # Add registration call
         register_line = f"    register_{client_id}()"
         if register_line not in content:
-            lines = content.split('\\n')
             for i, line in enumerate(lines):
                 if "# register_my_client()  # Uncomment when you add a new client" in line:
                     lines.insert(i, register_line)
@@ -1296,6 +1302,30 @@ def {register_func_name}():
         if not self.selected_client_var.get():
             messagebox.showerror("Error", "Please select a client.")
             return
+            
+        # Update .env file with current settings
+        if hasattr(self, 'request_delay_ms_var'):
+            try:
+                # Use direct function calls instead of methods to avoid lint errors
+                from pathlib import Path
+                import os, re
+                from dotenv import load_dotenv
+                
+                # Update REQUEST_DELAY_MS in .env file
+                env_file = Path(".env")
+                if env_file.exists():
+                    content = env_file.read_text()
+                    pattern = re.compile(r"^REQUEST_DELAY_MS=.*$", re.MULTILINE)
+                    delay_ms = self.request_delay_ms_var.get()
+                    
+                    if pattern.search(content):
+                        # Update existing key
+                        updated_content = pattern.sub(f"REQUEST_DELAY_MS={delay_ms}", content)
+                        env_file.write_text(updated_content)
+                        print(f"Updated REQUEST_DELAY_MS to {delay_ms}ms in .env file")
+            except Exception as e:
+                # Log error but continue with scraping
+                print(f"Warning: Could not update .env file: {e}")
 
         # Extract client ID from selection
         client_selection = self.selected_client_var.get()
@@ -1938,6 +1968,45 @@ Generic Scraper v2.0 - Terminal Interface
     def run(self) -> None:
         """Run the GUI."""
         self.root.mainloop()
+        
+    def get_env_value(self, key: str, default: str = "") -> str:
+        """Get a value from the .env file."""
+        import os
+        from pathlib import Path
+        from dotenv import load_dotenv
+        
+        # Load .env file
+        load_dotenv()
+        
+        # Get the value from environment
+        value = os.getenv(key, default)
+        return value
+    
+    def update_env_value(self, key: str, value: str) -> bool:
+        """Update a value in the .env file."""
+        from pathlib import Path
+        import re
+        
+        env_file = Path(".env")
+        if not env_file.exists():
+            print(f"Warning: .env file not found at {env_file.absolute()}")
+            return False
+            
+        # Read the current content
+        content = env_file.read_text()
+        
+        # Look for the key in the file
+        pattern = re.compile(f"^{key}=.*$", re.MULTILINE)
+        if pattern.search(content):
+            # Update existing key
+            updated_content = pattern.sub(f"{key}={value}", content)
+        else:
+            # Append new key=value
+            updated_content = content + f"\n{key}={value}"
+            
+        # Write back to file
+        env_file.write_text(updated_content)
+        return True
 
 
 class FieldMappingDialog:
