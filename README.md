@@ -199,17 +199,36 @@ Each client is defined by:
    ```
 4. Copy `.env.example` to `.env` and fill in your credentials.
 
-## .env Configuration
-All secrets and config are loaded from `.env` or environment variables. Example:
+## .env Configuration and Security
+All secrets and configuration settings are loaded from `.env` or environment variables.
+
+### ⚠️ IMPORTANT: Protecting your configuration
+1. **NEVER commit your `.env` file to version control** - it contains sensitive information
+2. **Always keep a local backup** of your `.env` file (e.g., as `.env.local.backup`)
+3. **Use `.env.example` as a template** - it shows the required keys without real values
+4. **Changes to your .env file** will take effect on application restart, or for some settings (like Request Delay) when you start a new scraping job
+
+### Required Environment Variables
 ```
+# Core settings
 CONCURRENCY_LIMIT=3
 CHUNKSIZE=500
+REQUEST_DELAY_MS=50  # Delay between requests in milliseconds (lower = faster)
+
+# Proxy configuration (optional)
 PROXY_USERNAME=your_proxy_user
 PROXY_PASSWORD=your_proxy_pass
 PROXY_HOST=rp.proxyscrape.com:6060
+
+# Logging
 LOG_FILE=modern_refactored.log
 LOG_LEVEL=INFO
-EMAIL_NOTIFY_TO=your@email.com
+
+# Email notifications (required for email features)
+EMAIL_USER=your_email@gmail.com  # The sending email address
+EMAIL_PASS=your_app_password     # For Gmail, use an App Password
+EMAIL_NOTIFY_TO=notify@email.com # Where to send notifications
+EMAIL_NOTIFICATIONS_ENABLED=true # Set to false to disable emails
 ```
 
 ## Quick Start
