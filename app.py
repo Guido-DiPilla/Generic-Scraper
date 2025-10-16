@@ -10,14 +10,18 @@ import time
 from enum import Enum
 from pathlib import Path
 from typing import Optional
+
 import pandas as pd
 import typer
 from rich.progress import Progress
 from rich.table import Table
-from client_config import registry
+
 # Import client modules to trigger auto-registration
-import clients  # This registers demo, electronics_supplier, test_supplier, etc.
-import G2S  # This registers the G2S client
+# This registers demo, electronics_supplier, test_supplier, G2S, etc.
+import clients  # noqa: F401
+import G2S  # noqa: F401
+from client_config import registry
+
 # Direct imports - app.py is run as script by GUI subprocess
 from config import get_config
 from email_utils import send_email
@@ -64,7 +68,10 @@ def main(
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
 
     # Proxy connectivity test - run when proxy is configured
+    from typing import Any
+
     import aiohttp
+    
     async def proxy_test() -> None:
         if not config.proxy_username or not config.proxy_password:
             console.print("[yellow]Skipping proxy test - no proxy credentials configured[/yellow]")
@@ -77,8 +84,9 @@ def main(
         last_err: str | None = None
         for attempt in range(attempts):
             try:
-                # Use None for default SSL context to satisfy mypy
-                connector = aiohttp.TCPConnector(ssl=None if config.verify_ssl else False)
+                # Use proper SSL context handling
+                ssl_context: Any = None if config.verify_ssl else False
+                connector = aiohttp.TCPConnector(ssl=ssl_context)
                 timeout = aiohttp.ClientTimeout(total=10)
                 proxy = f"http://{config.proxy_host}"  # no credentials in URL
                 proxy_auth = aiohttp.BasicAuth(config.proxy_username, config.proxy_password)
@@ -241,8 +249,9 @@ def main(
 
         async def run_all() -> None:
             import aiohttp as _aiohttp
-            # Use None for default SSL context to satisfy mypy
-            connector = _aiohttp.TCPConnector(ssl=None if config.verify_ssl else False)
+            # Use proper SSL context handling
+            ssl_context: Any = None if config.verify_ssl else False
+            connector = _aiohttp.TCPConnector(ssl=ssl_context)
             # Create proxy auth only if proxy credentials are available
             proxy_auth = None
             proxy_url_to_use = None

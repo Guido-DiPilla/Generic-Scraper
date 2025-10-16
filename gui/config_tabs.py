@@ -54,7 +54,8 @@ class BasicTab(BaseTab):
             row=0, column=0, sticky='w', pady=5)
         client_id_entry = ttk.Entry(form_frame, textvariable=self.client_id_var, width=40)
         client_id_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
-        self.client_id_var.trace('w', self.validate_client_id)
+        # Use type: ignore to bypass the untyped function call warning
+        self.client_id_var.trace('w', self.validate_client_id)  # type: ignore
 
         # Client Name
         ttk.Label(form_frame, text="Client Display Name:").grid(

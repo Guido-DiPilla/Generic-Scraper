@@ -12,10 +12,11 @@ import re
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from dotenv import load_dotenv
 from PIL import Image, ImageTk  # For image handling
+from PIL.ImageTk import PhotoImage
 
 # Load environment variables from .env file
 load_dotenv()
@@ -153,11 +154,11 @@ class ClientGeneratorGUI:
                 'icon.png', 'icon.jpg', 'icon.jpeg', 'icon.gif', 'icon.bmp', 'icon.webp'
             ]
 
-            logo_image = None
+            logo_image: Optional[PhotoImage] = None
             for logo_path in logo_paths:
                 if os.path.exists(logo_path):
                     # Load and process the image
-                    pil_image = Image.open(logo_path)
+                    pil_image: Image.Image = Image.open(logo_path)
 
                     # Convert to RGBA to handle transparency
                     if pil_image.mode != 'RGBA':
@@ -177,13 +178,14 @@ class ClientGeneratorGUI:
                     # Resize to appropriate size (32x32 pixels)
                     pil_image = pil_image.resize((32, 32), Image.Resampling.LANCZOS)
                     logo_image = ImageTk.PhotoImage(pil_image)
+                    self.logo_image = logo_image  # Keep reference and type correct
                     break
 
             if logo_image:
                 # Create label with image using tk.Label for better background control
-                logo_label = tk.Label(logo_title_frame, image=logo_image,
+                # Cast the logo_image to work with tk.Label's image parameter
+                logo_label = tk.Label(logo_title_frame, image=cast(Any, logo_image),
                                      bg=self.root.cget('bg'), bd=0, highlightthickness=0)
-                self.logo_image = logo_image  # Keep a reference to prevent garbage collection
                 logo_label.pack(side='left', padx=(0, 10))
 
                 # Title without emoji

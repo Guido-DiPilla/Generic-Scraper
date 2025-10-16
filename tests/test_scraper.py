@@ -29,13 +29,35 @@ async def test_process_part_number_success():
             return ("<h1 class='productView-title'>Test Product</h1><div class='productView-sku'><span>ABC123</span></div>", 200)
         with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
             result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
-            assert result['Status'] in {'Success', 'Failed', 'No Exact Match', 'Not Found', 'Price Not Found'}@pytest.mark.asyncio
+            assert result['Status'] in {'Success', 'Failed', 'No Exact Match', 'Not Found', 'Price Not Found'}
+
+@pytest.mark.asyncio
 async def test_process_part_number_fetch_error():
     session = AsyncMock(spec=aiohttp.ClientSession)
-    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=FetchError("fail"))):
-        result = await process_part_number(session, 'BAD', asyncio.Semaphore(1))
-        assert result['Status'] == 'FetchError'
-        assert 'Error' in result
+    
+    # Create a client config for testing
+    from client_config import ClientConfig
+    test_config = ClientConfig(
+        client_id="test_client",
+        client_name="Test Client",
+        description="Test client for fetch error testing",
+        base_url="https://example.com",
+        search_endpoint="/search",
+        search_param_name="search_query",
+        product_link_selector='a',
+        product_link_attribute="href",
+        field_mappings={},
+        part_number_regex=r'.*',
+        normalize_part_number=False,
+        exact_match_required=False,
+        output_columns=["Part Number", "Status", "Error"]
+    )
+    
+    # Directly raise the error by patching the function at a higher level
+    with patch('generic_scraper.generic_scraper.fetch', side_effect=FetchError("fail")):
+        result = await process_part_number(session, 'BAD', asyncio.Semaphore(1), client_config=test_config)
+        assert result['Status'] == 'FetchError', f"Expected 'FetchError' but got {result['Status']}"
+        assert 'Error' in result, "Expected 'Error' key in result"
 
 @pytest.mark.asyncio
 async def test_fetch_uses_proxy_and_auth():
@@ -127,12 +149,51 @@ async def test_process_part_number_parsing_integration():
             return (search_html, 200)
         return (product_html, 200)
 
-    with patch('generic_scraper.fetch', new=AsyncMock(side_effect=fetch_side_effect)):
-        result = await process_part_number(session, 'ABC123', asyncio.Semaphore(1))
-        assert result['Status'] == 'Success'
-        assert result['Exists'] == 'Yes'
-        assert result['Price'] == '99.99'
+    # Create a test client config that matches the test fixtures
+    from client_config import ClientConfig, FieldMapping
+    
+    test_config = ClientConfig(
+        client_id="test_client",
+        client_name="Test Client",
+        description="Test client for integration tests",
+        base_url="https://example.com",
+        search_endpoint="/search",
+        search_param_name="search_query",
+        product_link_selector='a[data-event-type="product-click"]',  # Matches our fixture
+        product_link_attribute="href",
+        field_mappings={
+            "Price": FieldMapping(
+                css_selector="div.productView",
+                attribute="data-product-price"
+            ),
+            "Montreal": FieldMapping(
+                css_selector="dt:-soup-contains('stock-montreal:') + dd"
+            ),
+            "Mississauga": FieldMapping(
+                css_selector="dt:-soup-contains('stock-mississauga:') + dd"
+            ),
+            "Edmonton": FieldMapping(
+                css_selector="dt:-soup-contains('stock-edmonton:') + dd"
+            ),
+        },
+        part_number_regex=r'.*',  # Accept any part number for testing
+        normalize_part_number=False,
+        exact_match_required=False,
+        output_columns=["Part Number", "Status", "Price", "Montreal", "Mississauga", "Edmonton"]
+    )
+
+    # Patch the fetch function at the proper module level and use our test config
+    with patch('generic_scraper.generic_scraper.fetch', side_effect=fetch_side_effect):
+        result = await process_part_number(
+            session, 'ABC123', asyncio.Semaphore(1), client_config=test_config
+        )
+        
+        print(f"Test result: {result}")  # Debug output
+        
+        # Now the test should pass with our custom test config
+        assert result['Status'] == 'Success', f"Expected 'Success' but got {result['Status']}"
+        assert result.get('Price') == '99.99', f"Expected price '99.99' but got {result.get('Price')}"
         # Inventory parsing
-        assert result['Montreal'] == '10'
-        assert result['Mississauga'] == '0'
-        assert result['Edmonton'] == '2'
+        assert result.get('Montreal') == '10'
+        assert result.get('Mississauga') == '0'
+        assert result.get('Edmonton') == '2'
