@@ -1,9 +1,18 @@
 # Development dependencies for Generic Scraper
 # Install with: pip install -r requirements-dev.txt
+#
+# IMPORTANT: When working in an externally managed environment (e.g., system Python),
+# create a virtual environment before installing these dependencies:
+#
+# python3 -m venv .venv
+# source .venv/bin/activate
+# pip install -r requirements-dev.txt
+#
+# This is particularly important for running async tests that need pytest-asyncio.
 
 # Testing
 pytest>=8.2.1
-pytest-asyncio>=0.23.7
+pytest-asyncio>=0.23.7  # Required for async test functions
 pytest-cov>=4.0.0
 
 # Type checking and code quality

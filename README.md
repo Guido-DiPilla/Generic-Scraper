@@ -54,10 +54,23 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# For development, install dev dependencies (including pytest-asyncio for tests)
+pip install -r requirements-dev.txt
+
 # Create .env configuration file
 cp .env.example .env
 # Edit .env with your proxy credentials and settings
 ```
+
+### **Important: Development Environment**
+To run the tests (especially async tests in `test_scraper.py`), you need to:
+
+1. Create a virtual environment (as shown above)
+2. Activate the virtual environment
+3. Install dev dependencies with `pip install -r requirements-dev.txt`
+4. Run tests with `pytest` (or `python -m pytest`)
+
+Without a virtual environment and `pytest-asyncio` installed, the async tests will be skipped.
 
 ### **Environment Configuration**
 Create a `.env` file with your settings:
@@ -314,10 +327,13 @@ EMAIL_NOTIFY_TO=your@email.com
 
 ## Troubleshooting
 
-- **Import errors in VS Code:** Ensure you run from the Modern_Refactored folder, and use local imports (already set up).
+- **Import errors in VS Code:** Ensure you run from the project root folder, and use relative imports.
 - **Proxy errors:** Double-check your proxy credentials and network access. Use the built-in proxy test (runs at startup).
 - **Email errors:** Make sure EMAIL_USER and EMAIL_PASS are set in your .env if using notifications.
-- **Async test failures:** If pytest-asyncio is not installed, run `pip install pytest-asyncio`.
+- **Async test failures:** 
+  - Tests require `pytest-asyncio`. Install with `pip install pytest-asyncio` in your virtual environment.
+  - If you're using system Python in an externally managed environment, create a virtual environment first.
+  - Without pytest-asyncio, async tests will be skipped with warnings.
 - **File dialog not appearing:** If tkinter is not available, the script will fall back to CLI input.
 - **Typer errors:** The application requires Typer 0.19.2 or higher. If you encounter errors like "Secondary flag is not valid for non-boolean flag", upgrade Typer with `pip install -U typer`.
 

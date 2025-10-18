@@ -1,19 +1,24 @@
 """
 Unit tests for scraper.py (parsing and error handling)
 """
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
 import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from generic_scraper import process_part_number, fetch
-from exceptions import FetchError
-import aiohttp
 import time
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import aiohttp
+import pytest
 from bs4 import BeautifulSoup
+
+# Make sure we can import from the project root
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Import the functions directly from the module
+from generic_scraper import fetch, process_part_number  # noqa: E402
+from exceptions import FetchError  # noqa: E402
 
 @pytest.mark.asyncio
 async def test_process_part_number_success():

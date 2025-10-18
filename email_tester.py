@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script for email functionality with proper error handling.
+This is a standalone script, not a pytest test file.
 """
 
 import os
@@ -9,6 +10,8 @@ from pathlib import Path
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))
+# Skip pytest collection of this file
+__test__ = False
 
 from dotenv import load_dotenv
 
