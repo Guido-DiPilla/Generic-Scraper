@@ -4,14 +4,13 @@ Field Mapping Dialog for configuring data extraction fields.
 
 import tkinter as tk
 from tkinter import messagebox, ttk
-from typing import Optional, Tuple
 
 
 class FieldMappingDialog:
     """Dialog for creating/editing field mapping configurations."""
 
-    def __init__(self, parent: tk.Tk, initial_values: Optional[Tuple[str, str, str]] = None) -> None:
-        self.result: Optional[Tuple[str, str, str]] = None
+    def __init__(self, parent: tk.Tk, initial_values: tuple[str, str, str] | None = None) -> None:
+        self.result: tuple[str, str, str] | None = None
 
         # Create dialog
         self.dialog = tk.Toplevel(parent)

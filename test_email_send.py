@@ -28,7 +28,7 @@ print(f"- EMAIL_NOTIFY_TO: {'set' if email_notify_to else 'not set'} ({email_not
 # Try to import and use send_email
 try:
     from email_utils import send_email
-    
+
     # Don't actually send if using placeholder credentials
     if email_user == 'your_email@gmail.com' or email_pass == 'your_app_password':
         print("\nSkipping actual email send with placeholder credentials.")

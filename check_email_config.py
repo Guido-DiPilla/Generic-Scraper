@@ -4,10 +4,11 @@ Test script to verify email configurations.
 """
 
 import os
-from pathlib import Path
 
 # Add the project root to Python path
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from dotenv import load_dotenv

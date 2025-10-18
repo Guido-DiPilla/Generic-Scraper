@@ -12,7 +12,7 @@ import re
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 from dotenv import load_dotenv
 from PIL import Image, ImageTk  # For image handling
@@ -31,9 +31,9 @@ class ToolTip:
         self.text = text
         self.widget.bind("<Enter>", self.enter)
         self.widget.bind("<Leave>", self.leave)
-        self.tooltip_window: Optional[tk.Toplevel] = None
+        self.tooltip_window: tk.Toplevel | None = None
 
-    def enter(self, event: Optional[Any] = None) -> None:
+    def enter(self, event: Any | None = None) -> None:
         try:
             # Try to get cursor position (works for text widgets)
             if hasattr(self.widget, 'bbox'):
@@ -62,7 +62,7 @@ class ToolTip:
                         font=("Arial", 8), wraplength=300)
         label.pack(ipadx=5, ipady=3)
 
-    def leave(self, event: Optional[Any] = None) -> None:
+    def leave(self, event: Any | None = None) -> None:
         if self.tooltip_window:
             self.tooltip_window.destroy()
         self.tooltip_window = None
@@ -90,9 +90,9 @@ class ClientGeneratorGUI:
         self.root.minsize(800, 600)     # Set minimum size
 
         # Client configuration data
-        self.client_data: Dict[str, Any] = {}
-        self.field_mappings: List[Dict[str, Any]] = []
-        self.logo_image: Optional[Any] = None  # Store logo image reference
+        self.client_data: dict[str, Any] = {}
+        self.field_mappings: list[dict[str, Any]] = []
+        self.logo_image: Any | None = None  # Store logo image reference
 
         self.setup_ui()
 
@@ -154,7 +154,7 @@ class ClientGeneratorGUI:
                 'icon.png', 'icon.jpg', 'icon.jpeg', 'icon.gif', 'icon.bmp', 'icon.webp'
             ]
 
-            logo_image: Optional[PhotoImage] = None
+            logo_image: PhotoImage | None = None
             for logo_path in logo_paths:
                 if os.path.exists(logo_path):
                     # Load and process the image
@@ -1114,7 +1114,7 @@ def {register_func_name}():
 
     def save_template(self) -> None:
         """Save current configuration as a template."""
-        template_data: Dict[str, Any] = {
+        template_data: dict[str, Any] = {
             'client_id': self.client_id_var.get(),
             'client_name': self.client_name_var.get(),
             'description': self.description_var.get(),
@@ -1185,7 +1185,7 @@ def {register_func_name}():
 
             except Exception as e:
                 messagebox.showerror("Error", f"Error loading template: {str(e)}")
-    def on_client_selected(self, event: Optional[Any] = None) -> None:
+    def on_client_selected(self, event: Any | None = None) -> None:
         """Handle client selection from dropdown - populate configuration fields."""
         try:
             from client_config import registry
@@ -1302,22 +1302,22 @@ def {register_func_name}():
         if not self.selected_client_var.get():
             messagebox.showerror("Error", "Please select a client.")
             return
-            
+
         # Update .env file with current settings
         if hasattr(self, 'request_delay_ms_var'):
             try:
                 # Use direct function calls instead of methods to avoid lint errors
+                import re
                 from pathlib import Path
-                import os, re
-                from dotenv import load_dotenv
-                
+
+
                 # Update REQUEST_DELAY_MS in .env file
                 env_file = Path(".env")
                 if env_file.exists():
                     content = env_file.read_text()
                     pattern = re.compile(r"^REQUEST_DELAY_MS=.*$", re.MULTILINE)
                     delay_ms = self.request_delay_ms_var.get()
-                    
+
                     if pattern.search(content):
                         # Update existing key
                         updated_content = pattern.sub(f"REQUEST_DELAY_MS={delay_ms}", content)
@@ -1553,7 +1553,7 @@ def {register_func_name}():
         self.log_text.tag_configure('table_row', foreground='#CCCCCC')
         self.log_text.tag_configure('black', foreground='#000000')
 
-    def log_message(self, message: str, style: Optional[str] = None) -> None:
+    def log_message(self, message: str, style: str | None = None) -> None:
         """Add message to log area with optional styling."""
         # Insert message with timestamp
         import datetime
@@ -1571,7 +1571,7 @@ def {register_func_name}():
         self.log_text.see(tk.END)
         self.root.update_idletasks()
 
-    def parse_ansi_codes(self, text: str) -> List[Tuple[str, List[str]]]:
+    def parse_ansi_codes(self, text: str) -> list[tuple[str, list[str]]]:
         """Parse ANSI escape sequences and return segments with styling."""
         import re
 
@@ -1585,7 +1585,7 @@ def {register_func_name}():
 
         segments = []
         current_text = text
-        current_styles: List[str] = []
+        current_styles: list[str] = []
 
         # Pattern to match all ANSI escape sequences
         ansi_pattern = re.compile(r'\033\[([0-9;?]*)([mABCDEFGHJKSThlf])')
@@ -1688,7 +1688,7 @@ def {register_func_name}():
 
         return True
 
-    def parse_rich_markup(self, text: str) -> List[tuple[str, Optional[str]]]:
+    def parse_rich_markup(self, text: str) -> list[tuple[str, str | None]]:
         """Parse Rich-style markup and return segments with styling."""
         import re
 
@@ -1709,7 +1709,7 @@ def {register_func_name}():
             r'\[bright_yellow\](.*?)\[/bright_yellow\]': ('bright_yellow', r'\1'),
         }
 
-        segments: List[Tuple[str, Optional[str]]] = []
+        segments: list[tuple[str, str | None]] = []
         current_text = text
 
         while current_text:
@@ -1778,7 +1778,7 @@ def {register_func_name}():
                         gui_styles.append('bold')
 
                 # If no specific styles, apply context-based styling
-                final_style: Optional[Union[List[str], str]] = gui_styles if gui_styles else None
+                final_style: list[str] | str | None = gui_styles if gui_styles else None
                 if not final_style:
                     context_style = self.detect_content_style(segment_text)
                     if context_style:
@@ -1808,7 +1808,7 @@ def {register_func_name}():
                         continue
 
                     # Apply context-based styling if no specific style
-                    final_segment_style: Optional[str] = segment_style
+                    final_segment_style: str | None = segment_style
                     if final_segment_style is None:
                         final_segment_style = self.detect_content_style(segment_text)
 
@@ -1819,7 +1819,7 @@ def {register_func_name}():
         self.log_text.see(tk.END)
         self.root.update_idletasks()
 
-    def detect_content_style(self, text: str) -> Optional[str]:
+    def detect_content_style(self, text: str) -> str | None:
         """Detect appropriate style based on text content."""
         if any(indicator in text for indicator in ["✅", "Success"]):
             return 'success'
@@ -1893,13 +1893,13 @@ def {register_func_name}():
         style = self.detect_content_style(text)
         self.insert_styled_text(text, style)
 
-    def parse_and_insert_ansi(self, text: str, ansi_codes: Dict[str, Optional[str]]) -> None:
+    def parse_and_insert_ansi(self, text: str, ansi_codes: dict[str, str | None]) -> None:
         """Parse ANSI codes and insert formatted text."""
         import re
 
         # Split text by ANSI codes
         parts = re.split(r'(\033\[[0-9;]*m)', text)
-        current_styles: List[str] = []
+        current_styles: list[str] = []
 
         for part in parts:
             if part in ansi_codes:
@@ -1911,7 +1911,7 @@ def {register_func_name}():
             elif part:  # Non-empty text part
                 self.insert_styled_text(part, current_styles)
 
-    def insert_styled_text(self, text: str, styles: Union[str, List[str], None]) -> None:
+    def insert_styled_text(self, text: str, styles: str | list[str] | None) -> None:
         """Insert text with given styles."""
         if not text:  # Don't process empty text
             return
@@ -1968,33 +1968,33 @@ Generic Scraper v2.0 - Terminal Interface
     def run(self) -> None:
         """Run the GUI."""
         self.root.mainloop()
-        
+
     def get_env_value(self, key: str, default: str = "") -> str:
         """Get a value from the .env file."""
         import os
-        from pathlib import Path
+
         from dotenv import load_dotenv
-        
+
         # Load .env file
         load_dotenv()
-        
+
         # Get the value from environment
         value = os.getenv(key, default)
         return value
-    
+
     def update_env_value(self, key: str, value: str) -> bool:
         """Update a value in the .env file."""
-        from pathlib import Path
         import re
-        
+        from pathlib import Path
+
         env_file = Path(".env")
         if not env_file.exists():
             print(f"Warning: .env file not found at {env_file.absolute()}")
             return False
-            
+
         # Read the current content
         content = env_file.read_text()
-        
+
         # Look for the key in the file
         pattern = re.compile(f"^{key}=.*$", re.MULTILINE)
         if pattern.search(content):
@@ -2003,15 +2003,15 @@ Generic Scraper v2.0 - Terminal Interface
         else:
             # Append new key=value
             updated_content = content + f"\n{key}={value}"
-            
+
         # Write back to file
         env_file.write_text(updated_content)
         return True
 
 
 class FieldMappingDialog:
-    def __init__(self, parent: Any, initial_values: Optional[Union[Tuple[str, str, str], Tuple[Any, ...], str]] = None) -> None:
-        self.result: Optional[Tuple[str, str, str]] = None
+    def __init__(self, parent: Any, initial_values: tuple[str, str, str] | tuple[Any, ...] | str | None = None) -> None:
+        self.result: tuple[str, str, str] | None = None
 
         # Create dialog
         self.dialog = tk.Toplevel(parent)

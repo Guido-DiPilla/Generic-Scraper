@@ -23,7 +23,6 @@ import asyncio
 import logging
 import random
 import re
-from typing import Dict, Optional
 
 import aiohttp
 from bs4 import BeautifulSoup, Tag
@@ -40,12 +39,12 @@ USER_AGENT = "Mozilla/5.0"
 async def fetch(
     session: aiohttp.ClientSession,
     url: str,
-    params: Optional[dict[str, str]] = None,
+    params: dict[str, str] | None = None,
     max_retries: int = 3,
-    proxy_url: Optional[str] = None,
-    proxy_auth: Optional[aiohttp.BasicAuth] = None,
+    proxy_url: str | None = None,
+    proxy_auth: aiohttp.BasicAuth | None = None,
     request_delay_s: float = 0.0,
-) -> tuple[Optional[str], Optional[int]]:
+) -> tuple[str | None, int | None]:
     """
     Asynchronously fetch a URL with retries and exponential backoff.
     This is the same robust fetch function from the original scraper.
@@ -171,10 +170,10 @@ async def process_part_number_generic(
     part_number: str,
     client_config: ClientConfig,
     semaphore: asyncio.Semaphore,
-    proxy_url: Optional[str] = None,
-    proxy_auth: Optional[aiohttp.BasicAuth] = None,
+    proxy_url: str | None = None,
+    proxy_auth: aiohttp.BasicAuth | None = None,
     request_delay_s: float = 0.0,
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Generic scraper that processes a part number using client configuration.
 
@@ -192,7 +191,7 @@ async def process_part_number_generic(
     """
 
     # Initialize result with part number and default status
-    result: Dict[str, str] = {"Part Number": part_number, "Status": "Failed"}
+    result: dict[str, str] = {"Part Number": part_number, "Status": "Failed"}
 
     async with semaphore:
         try:
@@ -295,7 +294,7 @@ async def process_part_number_generic(
     return result
 
 
-def calculate_derived_fields(result: Dict[str, str], config: ClientConfig) -> None:
+def calculate_derived_fields(result: dict[str, str], config: ClientConfig) -> None:
     """
     Calculate derived fields like 'In Stock' from inventory data.
     This can be customized per client as needed.
@@ -321,11 +320,11 @@ async def process_part_number(
     session: aiohttp.ClientSession,
     part_number: str,
     semaphore: asyncio.Semaphore,
-    proxy_url: Optional[str] = None,
-    proxy_auth: Optional[aiohttp.BasicAuth] = None,
+    proxy_url: str | None = None,
+    proxy_auth: aiohttp.BasicAuth | None = None,
     request_delay_s: float = 0.0,
-    client_config: Optional[ClientConfig] = None,
-) -> Dict[str, str]:
+    client_config: ClientConfig | None = None,
+) -> dict[str, str]:
     """
     Backward-compatible wrapper for the generic scraper.
     If no client_config is provided, will use G2S config as default.

@@ -7,7 +7,7 @@ import asyncio
 import threading
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ScraperTab:
@@ -17,8 +17,8 @@ class ScraperTab:
         self.parent = parent
         self.main_app = main_app
         self.frame = ttk.Frame(parent)
-        self.terminal_output: Optional[scrolledtext.ScrolledText] = None
-        self.progress_var: Optional[tk.StringVar] = None
+        self.terminal_output: scrolledtext.ScrolledText | None = None
+        self.progress_var: tk.StringVar | None = None
         self.stop_scraping = False
         self.setup_tab()
 
@@ -246,13 +246,13 @@ class ScraperTab:
         if self.progress_var:
             self.progress_var.set(message)
 
-    def get_data(self) -> Dict[str, Any]:
+    def get_data(self) -> dict[str, Any]:
         """Get scraper tab data."""
         return {
             "stop_scraping": self.stop_scraping
         }
 
-    def set_data(self, data: Dict[str, Any]) -> None:
+    def set_data(self, data: dict[str, Any]) -> None:
         """Set scraper tab data."""
         if "stop_scraping" in data:
             self.stop_scraping = data["stop_scraping"]

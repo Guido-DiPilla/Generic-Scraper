@@ -34,7 +34,7 @@ async def test_process_part_number_success():
 @pytest.mark.asyncio
 async def test_process_part_number_fetch_error():
     session = AsyncMock(spec=aiohttp.ClientSession)
-    
+
     # Create a client config for testing
     from client_config import ClientConfig
     test_config = ClientConfig(
@@ -52,7 +52,7 @@ async def test_process_part_number_fetch_error():
         exact_match_required=False,
         output_columns=["Part Number", "Status", "Error"]
     )
-    
+
     # Directly raise the error by patching the function at the proper module level
     with patch('generic_scraper.fetch', side_effect=FetchError("fail")):
         result = await process_part_number(session, 'BAD', asyncio.Semaphore(1), client_config=test_config)
@@ -151,7 +151,7 @@ async def test_process_part_number_parsing_integration():
 
     # Create a test client config that matches the test fixtures
     from client_config import ClientConfig, FieldMapping
-    
+
     test_config = ClientConfig(
         client_id="test_client",
         client_name="Test Client",
@@ -187,9 +187,9 @@ async def test_process_part_number_parsing_integration():
         result = await process_part_number(
             session, 'ABC123', asyncio.Semaphore(1), client_config=test_config
         )
-        
+
         print(f"Test result: {result}")  # Debug output
-        
+
         # Now the test should pass with our custom test config
         assert result['Status'] == 'Success', f"Expected 'Success' but got {result['Status']}"
         assert result.get('Price') == '99.99', f"Expected price '99.99' but got {result.get('Price')}"

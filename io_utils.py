@@ -8,7 +8,6 @@ import shutil
 import tempfile
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 
@@ -61,8 +60,8 @@ def save_results_atomic(
 def generate_summary_report(
     results: list[dict[str, str]],
     elapsed: float,
-    input_file: Union[str, Path, None] = None,
-    output_file: Union[str, Path, None] = None
+    input_file: str | Path | None = None,
+    output_file: str | Path | None = None
 ) -> str:
     """
     Generate a summary report as a string (for email or terminal output).

@@ -19,19 +19,20 @@ Extensibility:
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
 class FieldMapping:
     """Configuration for extracting a specific field from HTML."""
-    css_selector: Optional[str] = None
-    xpath: Optional[str] = None
-    attribute: Optional[str] = None  # e.g., 'href', 'data-price'
-    regex_pattern: Optional[str] = None
+    css_selector: str | None = None
+    xpath: str | None = None
+    attribute: str | None = None  # e.g., 'href', 'data-price'
+    regex_pattern: str | None = None
     default_value: str = "Not found"
-    transform_func: Optional[Callable[[str], str]] = None
+    transform_func: Callable[[str], str] | None = None
 
 
 @dataclass(frozen=True)
@@ -53,7 +54,7 @@ class ClientConfig:
     product_link_attribute: str = "href"  # attribute containing product URL
 
     # Field mappings for data extraction
-    field_mappings: Dict[str, FieldMapping] = field(default_factory=dict)
+    field_mappings: dict[str, FieldMapping] = field(default_factory=dict)
 
     # Validation and normalization
     part_number_regex: str = r'^[\w\-/\.]{1,64}$'
@@ -61,31 +62,31 @@ class ClientConfig:
     exact_match_required: bool = True
 
     # Optional custom parser function
-    custom_parser: Optional[Callable[..., Any]] = None
+    custom_parser: Callable[..., Any] | None = None
 
     # Output column names (in desired order)
-    output_columns: List[str] = field(default_factory=list)
+    output_columns: list[str] = field(default_factory=list)
 
 
 class ClientRegistry:
     """Registry of available scraping clients."""
 
     def __init__(self) -> None:
-        self._clients: Dict[str, ClientConfig] = {}
+        self._clients: dict[str, ClientConfig] = {}
 
     def register(self, config: ClientConfig) -> None:
         """Register a new client configuration."""
         self._clients[config.client_id] = config
 
-    def get_client(self, client_id: str) -> Optional[ClientConfig]:
+    def get_client(self, client_id: str) -> ClientConfig | None:
         """Get client configuration by ID."""
         return self._clients.get(client_id)
 
-    def list_clients(self) -> List[ClientConfig]:
+    def list_clients(self) -> list[ClientConfig]:
         """Get all registered clients."""
         return list(self._clients.values())
 
-    def get_client_ids(self) -> List[str]:
+    def get_client_ids(self) -> list[str]:
         """Get list of all client IDs."""
         return list(self._clients.keys())
 

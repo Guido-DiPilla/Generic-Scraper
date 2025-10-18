@@ -4,12 +4,9 @@ Generic Scraper - GUI Launcher
 This script provides a simple launcher for the Generic Scraper GUI.
 """
 
-import os
 import sys
-import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox
-import subprocess
 
 # Add project root to path if needed
 project_root = Path(__file__).parent
@@ -55,14 +52,14 @@ def main() -> int:
 
         # Create and run the application
         app = ClientGeneratorGUI()
-        
+
         # Ensure the first tab (Run Scraper) is selected by default
         if hasattr(app, 'notebook'):
             app.notebook.select(0)
-            
+
         # Start the application
         app.run()
-        
+
         return 0
     except Exception as e:
         messagebox.showerror(

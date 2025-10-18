@@ -4,7 +4,7 @@ Provides hover tooltips for better user experience.
 """
 
 import tkinter as tk
-from typing import Any, Optional
+from typing import Any
 
 
 class ToolTip:
@@ -17,9 +17,9 @@ class ToolTip:
         self.text = text
         self.widget.bind("<Enter>", self.enter)
         self.widget.bind("<Leave>", self.leave)
-        self.tooltip_window: Optional[tk.Toplevel] = None
+        self.tooltip_window: tk.Toplevel | None = None
 
-    def enter(self, event: Optional[Any] = None) -> None:
+    def enter(self, event: Any | None = None) -> None:
         """Show tooltip on mouse enter."""
         try:
             # Try to get cursor position (works for text widgets)
@@ -49,7 +49,7 @@ class ToolTip:
                         font=("Arial", 8), wraplength=300)
         label.pack(ipadx=5, ipady=3)
 
-    def leave(self, event: Optional[Any] = None) -> None:
+    def leave(self, event: Any | None = None) -> None:
         """Hide tooltip on mouse leave."""
         if self.tooltip_window:
             self.tooltip_window.destroy()

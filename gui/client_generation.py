@@ -7,9 +7,10 @@ import json
 import os
 import re
 import tkinter as tk
+from collections.abc import Callable
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 class ClientGenerator:
@@ -18,7 +19,7 @@ class ClientGenerator:
     def __init__(self, main_app: Any) -> None:
         self.main_app = main_app
 
-    def generate_client_code(self, config: Dict[str, Any]) -> str:
+    def generate_client_code(self, config: dict[str, Any]) -> str:
         """Generate the client code based on configuration."""
         client_id = config.get('client_id', 'new_client')
         client_name = config.get('client_name', 'New Client')
@@ -98,7 +99,7 @@ def {register_func_name}():
 '''
         return code
 
-    def _format_headers(self, headers: Dict[str, str]) -> str:
+    def _format_headers(self, headers: dict[str, str]) -> str:
         """Format headers dictionary for code generation."""
         if not headers:
             return ""
@@ -109,7 +110,7 @@ def {register_func_name}():
 
         return ", ".join(header_items)
 
-    def generate_client(self, config: Dict[str, Any]) -> bool:
+    def generate_client(self, config: dict[str, Any]) -> bool:
         """Generate and save the client file."""
         try:
             client_id = config.get('client_id', '').strip()
@@ -168,7 +169,7 @@ def {register_func_name}():
             with open(init_file, 'w', encoding='utf-8') as f:
                 f.write(content)
 
-    def save_template(self, config: Dict[str, Any]) -> bool:
+    def save_template(self, config: dict[str, Any]) -> bool:
         """Save current configuration as a template."""
         try:
             filename = filedialog.asksaveasfilename(
@@ -194,7 +195,7 @@ def {register_func_name}():
             messagebox.showerror("Error", f"Failed to save template: {str(e)}")
             return False
 
-    def load_template(self, on_load_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> bool:
+    def load_template(self, on_load_callback: Callable[[dict[str, Any]], None] | None = None) -> bool:
         """Load configuration from a template file."""
         try:
             filename = filedialog.askopenfilename(
@@ -220,7 +221,7 @@ def {register_func_name}():
             messagebox.showerror("Error", f"Failed to load template: {str(e)}")
             return False
 
-    def get_existing_clients(self) -> List[str]:
+    def get_existing_clients(self) -> list[str]:
         """Get list of existing client IDs."""
         clients = []
         clients_dir = Path("clients")
@@ -233,7 +234,7 @@ def {register_func_name}():
 
         return sorted(clients)
 
-    def load_client_config(self, client_id: str) -> Optional[Dict[str, Any]]:
+    def load_client_config(self, client_id: str) -> dict[str, Any] | None:
         """Load configuration from an existing client file."""
         try:
             client_file = Path("clients") / f"{client_id}.py"

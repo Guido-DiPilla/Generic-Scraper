@@ -6,7 +6,7 @@ Provides modular tab components for better organization.
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, ttk
-from typing import Any, Optional
+from typing import Any
 
 from .tooltip import ToolTip
 
@@ -36,7 +36,7 @@ class BasicTab(BaseTab):
         self.client_id_var: tk.StringVar = tk.StringVar()
         self.client_name_var: tk.StringVar = tk.StringVar()
         self.description_var: tk.StringVar = tk.StringVar()
-        self.validation_label: Optional[ttk.Label] = None
+        self.validation_label: ttk.Label | None = None
         super().__init__(parent, main_app)
 
     def setup_tab(self) -> None:
@@ -226,7 +226,7 @@ class FieldsTab(BaseTab):
     """Field mappings configuration tab."""
 
     def __init__(self, parent: ttk.Notebook, main_app: Any) -> None:
-        self.fields_tree: Optional[ttk.Treeview] = None
+        self.fields_tree: ttk.Treeview | None = None
         super().__init__(parent, main_app)
 
     def setup_tab(self) -> None:

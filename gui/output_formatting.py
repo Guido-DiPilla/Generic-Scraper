@@ -8,7 +8,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import scrolledtext
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 class OutputFormatter:
@@ -59,7 +59,7 @@ class OutputFormatter:
         self.text_widget.tag_configure("table_header", foreground="#FFFF44", font=('Consolas', 9, 'bold'))
         self.text_widget.tag_configure("table_row", foreground="#FFFFFF")
 
-    def log_message(self, message: str, style: Optional[str] = None) -> None:
+    def log_message(self, message: str, style: str | None = None) -> None:
         """Log a message with optional styling."""
         if not message:
             return
@@ -90,13 +90,13 @@ class OutputFormatter:
             self.text_widget.insert(tk.END, message)
             self.text_widget.see(tk.END)
 
-    def parse_ansi_codes(self, text: str) -> List[Tuple[str, List[str]]]:
+    def parse_ansi_codes(self, text: str) -> list[tuple[str, list[str]]]:
         """Parse ANSI escape codes and return text segments with their styles."""
         # ANSI escape code pattern
         ansi_pattern = re.compile(r'\033\[([0-9;]*)m')
 
-        segments: List[Tuple[str, List[str]]] = []
-        current_styles: List[str] = []
+        segments: list[tuple[str, list[str]]] = []
+        current_styles: list[str] = []
         last_end = 0
 
         for match in ansi_pattern.finditer(text):
@@ -120,7 +120,7 @@ class OutputFormatter:
 
         return segments
 
-    def _process_ansi_codes(self, codes: List[str], current_styles: List[str]) -> List[str]:
+    def _process_ansi_codes(self, codes: list[str], current_styles: list[str]) -> list[str]:
         """Process ANSI codes and return updated style list."""
         new_styles = current_styles.copy()
 
@@ -188,7 +188,7 @@ class OutputFormatter:
 
         return True
 
-    def parse_rich_markup(self, text: str) -> List[Tuple[str, List[str]]]:
+    def parse_rich_markup(self, text: str) -> list[tuple[str, list[str]]]:
         """Parse Rich console markup and return styled segments."""
         # Rich markup patterns
         patterns = {
@@ -204,7 +204,7 @@ class OutputFormatter:
             r'\[white\](.*?)\[/white\]': ('fg_white',),
         }
 
-        segments: List[Tuple[str, List[str]]] = []
+        segments: list[tuple[str, list[str]]] = []
         remaining_text = text
 
         while remaining_text:
@@ -277,7 +277,7 @@ class OutputFormatter:
         self.text_widget.see(tk.END)
         self.text_widget.update_idletasks()
 
-    def _get_tag_config(self, styles: List[str]) -> Dict[str, Any]:
+    def _get_tag_config(self, styles: list[str]) -> dict[str, Any]:
         """Get tag configuration for multiple styles."""
         config = {}
 
@@ -306,7 +306,7 @@ class OutputFormatter:
 
         return config
 
-    def detect_content_style(self, text: str) -> Optional[str]:
+    def detect_content_style(self, text: str) -> str | None:
         """Detect the style of content based on patterns."""
         text_lower = text.lower().strip()
 

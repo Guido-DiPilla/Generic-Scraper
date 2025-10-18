@@ -4,12 +4,9 @@ Generic Scraper - GUI Main Entry Point
 This module provides a standalone GUI interface for the Generic Scraper tool.
 """
 
-import os
 import sys
-import tkinter as tk
 import types
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path if needed
 project_root = Path(__file__).parent
@@ -36,12 +33,12 @@ from client_generator import ClientGeneratorGUI
 def setup_exception_handler() -> None:
     """Set up a global exception handler to catch and display errors."""
     original_hook = sys.excepthook
-    
-    def exception_handler(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: Optional[types.TracebackType]) -> None:
+
+    def exception_handler(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: types.TracebackType | None) -> None:
         """Handle uncaught exceptions by showing a dialog."""
         import traceback
         error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        
+
         try:
             # Try to show error in GUI if possible
             from tkinter import messagebox
@@ -49,10 +46,10 @@ def setup_exception_handler() -> None:
         except:
             # Fall back to console error
             print(f"ERROR: {error_msg}")
-            
+
         # Call the original exception handler
         original_hook(exc_type, exc_value, exc_traceback)
-    
+
     sys.excepthook = exception_handler
 
 
@@ -60,19 +57,19 @@ def main() -> None:
     """Run the GUI application."""
     # Set up exception handling
     setup_exception_handler()
-    
+
     # Initialize the GUI
     app = ClientGeneratorGUI()
-    
+
     # Ensure the first tab (Run Scraper) is selected by default
     if hasattr(app, 'notebook'):
         app.notebook.select(0)
-        
+
     # Log application start
     if hasattr(app, 'log_message'):
         app.log_message("Generic Scraper GUI started", "success")
         app.log_message("Ready to process scraping requests", "info")
-    
+
     # Start the application
     app.run()
 

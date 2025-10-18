@@ -9,7 +9,6 @@ import json
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import typer
@@ -48,7 +47,7 @@ def main(
     input_csv: Path = typer.Option(..., "--input-csv", help="Input CSV file path"),
     output_csv: Path = typer.Option(..., "--output-csv", help="Output file path (CSV/JSON/Excel)"),
     client: str = typer.Option(..., "--client", help="Client ID (e.g., 'g2s')"),
-    log_level: Optional[str] = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),
+    log_level: str | None = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),
     dry_run: bool = typer.Option(False, help="Dry run mode (no writes)"),
     output_format: OutputFormat = typer.Option(OutputFormat.csv, help="Output format: csv, json, or excel"),
     resume: bool = typer.Option(False, help="Resume from existing output by skipping already processed part numbers"),
@@ -71,7 +70,7 @@ def main(
     from typing import Any
 
     import aiohttp
-    
+
     async def proxy_test() -> None:
         if not config.proxy_username or not config.proxy_password:
             console.print("[yellow]Skipping proxy test - no proxy credentials configured[/yellow]")
@@ -178,7 +177,7 @@ def main(
             return bool(re.match(r'^[\w\-/\.]{1,64}$', str(part_number).strip()))
 
         # Compute total items (best-effort; count non-empty lines)
-        total_items: Optional[int] = None
+        total_items: int | None = None
         try:
             with open(input_csv, encoding="utf-8", errors="ignore") as f:
                 total_items = sum(1 for line in f if line.strip())
