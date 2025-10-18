@@ -49,8 +49,12 @@ def main(
     client: str = typer.Option(..., "--client", help="Client ID (e.g., 'g2s')"),
     log_level: str | None = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),
     dry_run: bool = typer.Option(False, help="Dry run mode (no writes)"),
-    output_format: OutputFormat = typer.Option(OutputFormat.csv, help="Output format: csv, json, or excel"),
-    resume: bool = typer.Option(False, help="Resume from existing output by skipping already processed part numbers"),
+    output_format: OutputFormat = typer.Option(
+        OutputFormat.csv, help="Output format: csv, json, or excel"
+    ),
+    resume: bool = typer.Option(
+        False, help="Resume from existing output by skipping already processed part numbers"
+    ),
 ) -> None:
     """Run the Generic Scraper with required parameters (designed to be called by GUI)."""
     config = get_config()
@@ -61,7 +65,9 @@ def main(
     client_config = registry.get_client(client)
     if not client_config:
         available_clients = registry.get_client_ids()
-        console.print(f"[red]Client '{client}' not found. Available clients: {', '.join(available_clients)}[/red]")
+        clients_list = ', '.join(available_clients)
+        error_msg = f"Client '{client}' not found. Available clients: {clients_list}"
+        console.print(f"[red]{error_msg}[/red]")
         raise typer.Exit(1)
 
     console.print(f"[green]Selected client: {client_config.client_name}[/green]")
@@ -97,28 +103,46 @@ def main(
 
                             # Display comprehensive proxy information
                             console.print("[cyan]Proxy Connection Details:[/cyan]")
-                            console.print(f"  🌐 External IP: [bold blue]{data.get('ip', 'unknown')}[/bold blue]")
-                            console.print(f"  📍 Location: [yellow]{data.get('city', 'unknown')}, {data.get('region', 'unknown')}, {data.get('country_name', 'unknown')}[/yellow]")
-                            console.print(f"  🏢 ISP: [magenta]{data.get('org', 'unknown')}[/magenta]")
-                            console.print(f"  🌍 Country Code: [green]{data.get('country_code', 'unknown')}[/green]")
-                            console.print(f"  ⏰ Timezone: [cyan]{data.get('timezone', 'unknown')}[/cyan]")
+                            ip = data.get('ip', 'unknown')
+                            console.print(f"  🌐 External IP: [bold blue]{ip}[/bold blue]")
+                            
+                            city = data.get('city', 'unknown')
+                            region = data.get('region', 'unknown')
+                            country = data.get('country_name', 'unknown')
+                            location = f"{city}, {region}, {country}"
+                            console.print(f"  📍 Location: [yellow]{location}[/yellow]")
+                            
+                            org = data.get('org', 'unknown')
+                            console.print(f"  🏢 ISP: [magenta]{org}[/magenta]")
+                            
+                            country_code = data.get('country_code', 'unknown')
+                            console.print(f"  🌍 Country Code: [green]{country_code}[/green]")
+                            
+                            timezone = data.get('timezone', 'unknown')
+                            console.print(f"  ⏰ Timezone: [cyan]{timezone}[/cyan]")
 
                             # Show additional fields if available
                             if data.get('postal'):
-                                console.print(f"  📮 Postal Code: [dim]{data.get('postal')}[/dim]")
+                                postal = data.get('postal')
+                                console.print(f"  📮 Postal Code: [dim]{postal}[/dim]")
+                                
                             if data.get('latitude') and data.get('longitude'):
-                                console.print(f"  🗺️  Coordinates: [dim]{data.get('latitude')}, {data.get('longitude')}[/dim]")
+                                lat = data.get('latitude')
+                                lng = data.get('longitude')
+                                console.print(f"  🗺️  Coordinates: [dim]{lat}, {lng}[/dim]")
 
                             # Create a compact summary of key fields
                             key_fields = {
                                 'ip': data.get('ip'),
-                                'city': data.get('city'),
-                                'region': data.get('region'),
-                                'country': data.get('country_name'),
+                                'country': data.get('country_code'),
                                 'isp': data.get('org'),
                                 'timezone': data.get('timezone')
                             }
-                            console.print(f"[dim]Summary: {' | '.join([f'{k}={v}' for k, v in key_fields.items() if v])}[/dim]")
+                            
+                            # Format summary with filtered non-empty values
+                            summary_parts = [f'{k}={v}' for k, v in key_fields.items() if v]
+                            summary = ' | '.join(summary_parts)
+                            console.print(f"[dim]Summary: {summary}[/dim]")
                             return
                         last_err = f"HTTP status: {resp.status}"
                         raise RuntimeError(last_err)
@@ -128,11 +152,17 @@ def main(
                 if attempt < attempts - 1:
                     # Exponential backoff with jitter: 1s, 2s, ...
                     delay = (2 ** attempt) + _random.uniform(0, 0.5)
-                    console.print(f"[yellow]Proxy test attempt {attempt + 1} failed, retrying in {delay:.1f}s...[/yellow]")
+                    retry_time = f"{delay:.1f}s"
+                    attempt_num = f"{attempt + 1}"
+                    attempt_msg = f"Proxy test attempt {attempt_num} failed, "
+                    attempt_msg += f"retrying in {retry_time}..."
+                    console.print(f"[yellow]{attempt_msg}[/yellow]")
                     await asyncio.sleep(delay)
                     continue
             console.print(f"[red]❌ Proxy test failed after {attempts} attempts: {last_err}[/red]")
-            console.print("[yellow]⚠️  Scraping may fail without working proxy. Check your proxy credentials.[/yellow]")
+            warning_msg = "⚠️  Scraping may fail without working proxy."
+            warning_msg += " Check your proxy credentials."
+            console.print(f"[yellow]{warning_msg}[/yellow]")
     asyncio.run(proxy_test())
 
     setup_logging(config.log_file, config.log_level)
@@ -195,13 +225,13 @@ def main(
                     except Exception:
                         df_prev = pd.read_csv(output_csv)
                     if "Part Number" in df_prev.columns:
-                        # Only skip items that were successfully processed (not FetchError or Error)
+                        # Only skip items that were successfully processed
+                        # (not FetchError or Error)
                         if "Status" in df_prev.columns:
+                            # Filter out error statuses
+                            filtered_df = df_prev[~df_prev["Status"].isin(["FetchError", "Error"])]
                             processed = set(
-                                df_prev[~df_prev["Status"].isin(["FetchError", "Error"])]["Part Number"]
-                                .dropna()
-                                .astype(str)
-                                .tolist()
+                                filtered_df["Part Number"].dropna().astype(str).tolist()
                             )
                         else:
                             processed = set(df_prev["Part Number"].dropna().astype(str).tolist())
@@ -223,13 +253,13 @@ def main(
                     except Exception:  # noqa: BLE001
                         df_prev = pd.read_excel(output_csv)
                     if "Part Number" in df_prev.columns:
-                        # Only skip items that were successfully processed (not FetchError or Error)
+                        # Only skip items that were successfully processed
+                        # (not FetchError or Error)
                         if "Status" in df_prev.columns:
+                            # Filter out error statuses
+                            filtered_df = df_prev[~df_prev["Status"].isin(["FetchError", "Error"])]
                             processed = set(
-                                df_prev[~df_prev["Status"].isin(["FetchError", "Error"])]["Part Number"]
-                                .dropna()
-                                .astype(str)
-                                .tolist()
+                                filtered_df["Part Number"].dropna().astype(str).tolist()
                             )
                         else:
                             processed = set(df_prev["Part Number"].dropna().astype(str).tolist())
@@ -345,7 +375,8 @@ def main(
                                 f"[cyan]Edmonton:[/cyan] {mask_secrets(str(edmonton))} "
                                 f"[blue]In Stock:[/blue] {mask_secrets(str(in_stock))}"
                             )
-                            # Also print per-item output outside the progress context so it persists
+                            # Print per-item output outside the progress context
+                            # This ensures output remains visible after the progress bar updates
                             print(
                                 f"[{chunk_counter}/{len(chunk)}][{count}/{total_items or '?'}] "
                                 f"Processed: {mask_secrets(str(pn))} "
@@ -376,7 +407,11 @@ def main(
                         # Save results incrementally (cumulative)
                         if not dry_run:
                             if output_format == OutputFormat.csv:
-                                save_results_atomic(output_csv, all_results, client_config.output_columns)
+                                save_results_atomic(
+                                    output_csv, 
+                                    all_results, 
+                                    client_config.output_columns
+                                )
                             elif output_format == OutputFormat.json:
                                 with open(output_csv, "w", encoding="utf-8") as f:
                                     json.dump(all_results, f, ensure_ascii=False, indent=2)
