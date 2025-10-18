@@ -43,7 +43,7 @@ class OutputFormat(str, Enum):
     json = "json"
     excel = "excel"
 
-@app.command()
+@app.command()  # type: ignore[misc]
 def main(
     input_csv: Path = typer.Option(..., "--input-csv", help="Input CSV file path"),
     output_csv: Path = typer.Option(..., "--output-csv", help="Output file path (CSV/JSON/Excel)"),

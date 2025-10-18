@@ -127,3 +127,4 @@ email_config.json
 # Temporary client generation files
 temp_client.py
 temp_config.json
+.env.local.backup

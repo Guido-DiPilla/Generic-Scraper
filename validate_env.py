@@ -36,7 +36,7 @@ EMAIL_VARS: Dict[str, str] = {
 }
 
 # Optional variables with their descriptions and default values
-OPTIONAL_VARS: Dict[str, tuple] = {
+OPTIONAL_VARS: Dict[str, tuple[str, str]] = {
     "PROXY_USERNAME": ("Username for proxy authentication", ""),
     "PROXY_PASSWORD": ("Password for proxy authentication", ""),
     "PROXY_HOST": ("Proxy host and port", "rp.proxyscrape.com:6060"),

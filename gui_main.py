@@ -7,6 +7,7 @@ This module provides a standalone GUI interface for the Generic Scraper tool.
 import os
 import sys
 import tkinter as tk
+import types
 from pathlib import Path
 from typing import Optional
 
@@ -32,11 +33,11 @@ except ImportError:
 from client_generator import ClientGeneratorGUI
 
 
-def setup_exception_handler():
+def setup_exception_handler() -> None:
     """Set up a global exception handler to catch and display errors."""
     original_hook = sys.excepthook
     
-    def exception_handler(exc_type, exc_value, exc_traceback):
+    def exception_handler(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: Optional[types.TracebackType]) -> None:
         """Handle uncaught exceptions by showing a dialog."""
         import traceback
         error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -55,7 +56,7 @@ def setup_exception_handler():
     sys.excepthook = exception_handler
 
 
-def main():
+def main() -> None:
     """Run the GUI application."""
     # Set up exception handling
     setup_exception_handler()

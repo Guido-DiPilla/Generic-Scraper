@@ -22,7 +22,7 @@ if str(gui_path) not in sys.path:
     sys.path.append(str(gui_path))
 
 
-def check_requirements():
+def check_requirements() -> bool:
     """Check if all required modules are installed."""
     try:
         import client_generator  # noqa: F401
@@ -37,7 +37,7 @@ def check_requirements():
         return False
 
 
-def main():
+def main() -> int:
     """Run the GUI application by launching client_generator.py."""
     if not check_requirements():
         return 1
