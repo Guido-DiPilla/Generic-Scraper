@@ -559,21 +559,48 @@ class ClientGeneratorGUI:
         base_url_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Search Endpoint
-        ttk.Label(form_frame, text="Search Endpoint (e.g., /search):").grid(row=1, column=0, sticky='w', pady=5)
+        endpoint_label = ttk.Label(
+            form_frame,
+            text="Search Endpoint (e.g., /search):"
+        )
+        endpoint_label.grid(row=1, column=0, sticky='w', pady=5)
+        
         self.search_endpoint_var = tk.StringVar(value="/search")
-        search_endpoint_entry = ttk.Entry(form_frame, textvariable=self.search_endpoint_var, width=50)
+        search_endpoint_entry = ttk.Entry(
+            form_frame,
+            textvariable=self.search_endpoint_var,
+            width=50
+        )
         search_endpoint_entry.grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Search Parameter
-        ttk.Label(form_frame, text="Search Parameter Name (e.g., q, search, query):").grid(row=2, column=0, sticky='w', pady=5)
+        param_label = ttk.Label(
+            form_frame,
+            text="Search Parameter Name (e.g., q, search, query):"
+        )
+        param_label.grid(row=2, column=0, sticky='w', pady=5)
+        
         self.search_param_var = tk.StringVar(value="q")
-        search_param_entry = ttk.Entry(form_frame, textvariable=self.search_param_var, width=50)
+        search_param_entry = ttk.Entry(
+            form_frame,
+            textvariable=self.search_param_var,
+            width=50
+        )
         search_param_entry.grid(row=2, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Product Link Selector
-        ttk.Label(form_frame, text="Product Link CSS Selector:").grid(row=3, column=0, sticky='w', pady=5)
+        link_selector_label = ttk.Label(
+            form_frame, 
+            text="Product Link CSS Selector:"
+        )
+        link_selector_label.grid(row=3, column=0, sticky='w', pady=5)
+        
         self.product_selector_var = tk.StringVar(value="a.product-link")
-        product_selector_entry = ttk.Entry(form_frame, textvariable=self.product_selector_var, width=50)
+        product_selector_entry = ttk.Entry(
+            form_frame,
+            textvariable=self.product_selector_var,
+            width=50
+        )
         product_selector_entry.grid(row=3, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Part Number Regex
