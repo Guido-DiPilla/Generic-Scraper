@@ -147,7 +147,9 @@ class WebsiteTab(BaseTab):
         # Search Endpoint
         ttk.Label(form_frame, text="Search Endpoint (e.g., /search):").grid(
             row=1, column=0, sticky='w', pady=5)
-        search_endpoint_entry = ttk.Entry(form_frame, textvariable=self.search_endpoint_var, width=50)
+        search_endpoint_entry = ttk.Entry(
+            form_frame, textvariable=self.search_endpoint_var, width=50
+        )
         search_endpoint_entry.grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Search Parameter
@@ -159,7 +161,9 @@ class WebsiteTab(BaseTab):
         # Product Link Selector
         ttk.Label(form_frame, text="Product Link CSS Selector:").grid(
             row=3, column=0, sticky='w', pady=5)
-        product_selector_entry = ttk.Entry(form_frame, textvariable=self.product_selector_var, width=50)
+        product_selector_entry = ttk.Entry(
+            form_frame, textvariable=self.product_selector_var, width=50
+        )
         product_selector_entry.grid(row=3, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Part Number Regex
@@ -192,7 +196,9 @@ class WebsiteTab(BaseTab):
 
         # Add help label for regex
         help_label = ttk.Label(form_frame,
-            text="(Pattern to validate part numbers - e.g., letters, numbers, dashes, dots, 1-64 chars)",
+            text=(
+                "(Pattern to validate part numbers - e.g., letters, numbers, dashes, dots, 1-64 chars)"
+            ),
             font=('Arial', 8), foreground='gray')
         help_label.grid(row=5, column=1, sticky='w', padx=(10, 0), pady=(0, 5))
 
@@ -269,7 +275,11 @@ class FieldsTab(BaseTab):
         edit_field_btn.pack(side='left', padx=5)
         remove_field_btn = ttk.Button(buttons_frame, text="Remove Field", command=self.remove_field)
         remove_field_btn.pack(side='left', padx=5)
-        common_fields_btn = ttk.Button(buttons_frame, text="Add Common Fields", command=self.add_common_fields)
+        common_fields_btn = ttk.Button(
+            buttons_frame, 
+            text="Add Common Fields", 
+            command=self.add_common_fields
+        )
         common_fields_btn.pack(side='left', padx=5)
 
         # Add tooltips

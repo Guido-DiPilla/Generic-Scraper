@@ -122,7 +122,8 @@ def {register_func_name}():
             if not re.match(r'^[a-z][a-z0-9_]*$', client_id):
                 messagebox.showerror(
                     "Error",
-                    "Client ID must start with a lowercase letter and contain only lowercase letters, numbers, and underscores"
+                    "Client ID must start with a lowercase letter and contain only "
+                    "lowercase letters, numbers, and underscores"
                 )
                 return False
 
@@ -195,7 +196,9 @@ def {register_func_name}():
             messagebox.showerror("Error", f"Failed to save template: {str(e)}")
             return False
 
-    def load_template(self, on_load_callback: Callable[[dict[str, Any]], None] | None = None) -> bool:
+    def load_template(
+        self, on_load_callback: Callable[[dict[str, Any]], None] | None = None
+    ) -> bool:
         """Load configuration from a template file."""
         try:
             filename = filedialog.askopenfilename(

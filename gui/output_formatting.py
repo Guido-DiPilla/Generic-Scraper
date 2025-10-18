@@ -56,7 +56,11 @@ class OutputFormatter:
         self.text_widget.tag_configure("warning", foreground="#FFAA44")
         self.text_widget.tag_configure("error", foreground="#FF4444")
         self.text_widget.tag_configure("progress", foreground="#44FF44")
-        self.text_widget.tag_configure("table_header", foreground="#FFFF44", font=('Consolas', 9, 'bold'))
+        self.text_widget.tag_configure(
+            "table_header", 
+            foreground="#FFFF44", 
+            font=('Consolas', 9, 'bold')
+        )
         self.text_widget.tag_configure("table_row", foreground="#FFFFFF")
 
     def log_message(self, message: str, style: str | None = None) -> None:
@@ -140,19 +144,28 @@ class OutputFormatter:
                     if "underline" not in new_styles:
                         new_styles.append("underline")
                 elif 30 <= code_num <= 37:  # Foreground colors
-                    color_names = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
+                    color_names = [
+                        'black', 'red', 'green', 'yellow', 
+                        'blue', 'magenta', 'cyan', 'white'
+                    ]
                     color_name = f"fg_{color_names[code_num - 30]}"
                     # Remove any existing foreground colors
                     new_styles = [s for s in new_styles if not s.startswith('fg_')]
                     new_styles.append(color_name)
                 elif 40 <= code_num <= 47:  # Background colors
-                    color_names = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
+                    color_names = [
+                        'black', 'red', 'green', 'yellow', 
+                        'blue', 'magenta', 'cyan', 'white'
+                    ]
                     color_name = f"bg_{color_names[code_num - 40]}"
                     # Remove any existing background colors
                     new_styles = [s for s in new_styles if not s.startswith('bg_')]
                     new_styles.append(color_name)
                 elif 90 <= code_num <= 97:  # Bright foreground colors
-                    color_names = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
+                    color_names = [
+                        'black', 'red', 'green', 'yellow', 
+                        'blue', 'magenta', 'cyan', 'white'
+                    ]
                     color_name = f"fg_bright_{color_names[code_num - 90]}"
                     # Remove any existing foreground colors
                     new_styles = [s for s in new_styles if not s.startswith('fg_')]
@@ -311,7 +324,8 @@ class OutputFormatter:
         text_lower = text.lower().strip()
 
         # Progress indicators
-        if any(indicator in text_lower for indicator in ['processing', 'scraping', 'found', 'completed']):
+        indicators = ['processing', 'scraping', 'found', 'completed']
+        if any(indicator in text_lower for indicator in indicators):
             return "progress"
 
         # Error patterns

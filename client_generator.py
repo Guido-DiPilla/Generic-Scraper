@@ -214,8 +214,13 @@ class ClientGeneratorGUI:
         # Subtitle
         subtitle_frame = ttk.Frame(parent)
         subtitle_frame.pack(fill='x', padx=20, pady=(0, 15))
-        ttk.Label(subtitle_frame, text="Select input file, output location, and client to begin scraping operations",
-                 font=('Arial', 10), foreground='#666666').pack()
+        subtitle_label = ttk.Label(
+            subtitle_frame,
+            text="Select input file, output location, and client to begin scraping operations",
+            font=('Arial', 10),
+            foreground='#666666'
+        )
+        subtitle_label.pack()
 
         # Separator
         separator = ttk.Separator(parent, orient='horizontal')
@@ -225,7 +230,8 @@ class ClientGeneratorGUI:
         client_frame = ttk.LabelFrame(parent, text="Client Selection")
         client_frame.pack(fill='x', padx=20, pady=10)
 
-        ttk.Label(client_frame, text="Select scraping client:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        client_label = ttk.Label(client_frame, text="Select scraping client:")
+        client_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
 
         # Get available clients by scanning directories and importing them
         client_names = []
@@ -274,7 +280,11 @@ class ClientGeneratorGUI:
         client_dropdown.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
         # Add tooltip for client selection
-        ToolTip(client_dropdown, "Select the website/client configuration to use for scraping.\nEach client contains specific settings for different websites.")
+        ToolTip(
+            client_dropdown,
+            "Select the website/client configuration to use for scraping.\n"
+            "Each client contains specific settings for different websites."
+        )
 
         # Bind client selection change to populate configuration
         client_dropdown.bind('<<ComboboxSelected>>', self.on_client_selected)
@@ -606,17 +616,34 @@ class ClientGeneratorGUI:
         common_fields_btn.pack(side='left', padx=5)
 
         # Add tooltips for field mapping buttons
-        ToolTip(add_field_btn, "Add a new field to extract from product pages.\nDefine CSS selectors to capture data like price, availability, etc.")
-        ToolTip(edit_field_btn, "Modify the selected field mapping.\nSelect a field in the list above first.")
-        ToolTip(remove_field_btn, "Delete the selected field mapping.\nSelect a field in the list above first.")
-        ToolTip(common_fields_btn, "Add typical fields like Brand, Category, Model, Weight, Dimensions.\nUseful starting point for most e-commerce sites.")
+        ToolTip(
+            add_field_btn,
+            "Add a new field to extract from product pages.\n"
+            "Define CSS selectors to capture data like price, availability, etc."
+        )
+        ToolTip(
+            edit_field_btn,
+            "Modify the selected field mapping.\n"
+            "Select a field in the list above first."
+        )
+        ToolTip(
+            remove_field_btn,
+            "Delete the selected field mapping.\n"
+            "Select a field in the list above first."
+        )
+        ToolTip(
+            common_fields_btn,
+            "Add typical fields like Brand, Category, Model, Weight, Dimensions.\n"
+            "Useful starting point for most e-commerce sites."
+        )
 
         # Add some default fields
         self.add_default_fields()
 
     def setup_advanced_tab(self, parent: ttk.Frame) -> None:
         """Set up advanced configuration tab."""
-        ttk.Label(parent, text="Advanced Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        label = ttk.Label(parent, text="Advanced Configuration", font=('Arial', 14, 'bold'))
+        label.pack(pady=(10, 20))
 
         # Create scrollable frame
         canvas = tk.Canvas(parent)
@@ -636,22 +663,31 @@ class ClientGeneratorGUI:
         rate_frame.pack(fill='x', padx=20, pady=10)
 
         # Request delay (ms)
-        ttk.Label(rate_frame, text="Request Delay (ms):").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        delay_label = ttk.Label(rate_frame, text="Request Delay (ms):")
+        delay_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
         # Initialize from .env or default to 50ms
         initial_delay = self.get_env_value("REQUEST_DELAY_MS", "50")
         self.request_delay_ms_var = tk.StringVar(value=initial_delay)
-        request_delay_ms_entry = ttk.Entry(rate_frame, textvariable=self.request_delay_ms_var, width=10)
+        request_delay_ms_entry = ttk.Entry(
+            rate_frame, textvariable=self.request_delay_ms_var, width=10
+        )
         request_delay_ms_entry.grid(row=0, column=1, sticky='w', padx=5)
 
         # Timeout settings
-        ttk.Label(rate_frame, text="Request timeout (seconds):").grid(row=1, column=0, sticky='w', pady=5, padx=5)
+        req_timeout_label = ttk.Label(rate_frame, text="Request timeout (seconds):")
+        req_timeout_label.grid(row=1, column=0, sticky='w', pady=5, padx=5)
         self.request_timeout_var = tk.StringVar(value="30")
-        request_timeout_entry = ttk.Entry(rate_frame, textvariable=self.request_timeout_var, width=10)
+        request_timeout_entry = ttk.Entry(
+            rate_frame, textvariable=self.request_timeout_var, width=10
+        )
         request_timeout_entry.grid(row=1, column=1, sticky='w', padx=5)
 
-        ttk.Label(rate_frame, text="Total timeout (seconds):").grid(row=2, column=0, sticky='w', pady=5, padx=5)
+        total_timeout_label = ttk.Label(rate_frame, text="Total timeout (seconds):")
+        total_timeout_label.grid(row=2, column=0, sticky='w', pady=5, padx=5)
         self.total_timeout_var = tk.StringVar(value="300")
-        total_timeout_entry = ttk.Entry(rate_frame, textvariable=self.total_timeout_var, width=10)
+        total_timeout_entry = ttk.Entry(
+            rate_frame, textvariable=self.total_timeout_var, width=10
+        )
         total_timeout_entry.grid(row=2, column=1, sticky='w', padx=5)
 
         # Retry settings
@@ -661,64 +697,146 @@ class ClientGeneratorGUI:
         max_retries_entry.grid(row=3, column=1, sticky='w', padx=5)
 
         # Add tooltips for rate limiting
-        ToolTip(request_delay_ms_entry, "Delay between requests in milliseconds.\nLower values = faster scraping but more aggressive.\nHigher values = slower but more polite.\n50ms ≈ up to 20 requests/sec\n100ms ≈ up to 10 requests/sec\n200ms ≈ up to 5 requests/sec\n1000ms ≈ 1 request/sec")
-        ToolTip(request_timeout_entry, "Seconds to wait for each HTTP request before timing out.\nIncrease for slow websites.\nRecommended: 15-60")
-        ToolTip(total_timeout_entry, "Maximum seconds to wait for the entire scraping operation.\nPrevents infinite hangs.\nRecommended: 300-3600")
-        ToolTip(max_retries_entry, "How many times to retry failed requests.\nHigher values improve reliability but slow down errors.\nRecommended: 2-5")
+        ToolTip(
+            request_delay_ms_entry, 
+            "Delay between requests in milliseconds.\n"
+            "Lower values = faster scraping but more aggressive.\n"
+            "Higher values = slower but more polite.\n"
+            "50ms ≈ up to 20 requests/sec\n"
+            "100ms ≈ up to 10 requests/sec\n"
+            "200ms ≈ up to 5 requests/sec\n"
+            "1000ms ≈ 1 request/sec"
+        )
+        ToolTip(
+            request_timeout_entry, 
+            "Seconds to wait for each HTTP request before timing out.\n"
+            "Increase for slow websites.\n"
+            "Recommended: 15-60"
+        )
+        ToolTip(
+            total_timeout_entry, 
+            "Maximum seconds to wait for the entire scraping operation.\n"
+            "Prevents infinite hangs.\n"
+            "Recommended: 300-3600"
+        )
+        ToolTip(
+            max_retries_entry, 
+            "How many times to retry failed requests.\n"
+            "Higher values improve reliability but slow down errors.\n"
+            "Recommended: 2-5"
+        )
 
         # Proxy Configuration Section
         proxy_frame = ttk.LabelFrame(scrollable_frame, text="Proxy Configuration")
         proxy_frame.pack(fill='x', padx=20, pady=10)
 
         # Add instruction label
-        instruction_label = ttk.Label(proxy_frame, text="Proxy is enabled by default with credentials from environment variables:",
-                                    font=('Arial', 9), foreground='gray')
+        instruction_label = ttk.Label(
+            proxy_frame, 
+            text="Proxy is enabled by default with credentials from environment variables:",
+            font=('Arial', 9), 
+            foreground='gray'
+        )
         instruction_label.pack(anchor='w', padx=5, pady=(5, 0))
 
         # Default to proxy enabled with your credentials pre-filled
         self.use_proxy_var = tk.BooleanVar(value=True)
-        proxy_checkbox = ttk.Checkbutton(proxy_frame, text="Use proxy", variable=self.use_proxy_var,
-                       command=self.toggle_proxy_fields)
+        proxy_checkbox = ttk.Checkbutton(
+            proxy_frame, 
+            text="Use proxy", 
+            variable=self.use_proxy_var,
+            command=self.toggle_proxy_fields
+        )
         proxy_checkbox.pack(anchor='w', padx=5, pady=5)
 
         # Proxy fields frame
         self.proxy_fields_frame = ttk.Frame(proxy_frame)
         self.proxy_fields_frame.pack(fill='x', padx=20, pady=5)
 
-        ttk.Label(self.proxy_fields_frame, text="Proxy URL:").grid(row=0, column=0, sticky='w', pady=5)
+        proxy_url_label = ttk.Label(self.proxy_fields_frame, text="Proxy URL:")
+        proxy_url_label.grid(row=0, column=0, sticky='w', pady=5)
         self.proxy_url_var = tk.StringVar(value=os.getenv("PROXY_HOST", "rp.proxyscrape.com:6060"))
-        proxy_url_entry = ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_url_var, width=40)
+        proxy_url_entry = ttk.Entry(
+            self.proxy_fields_frame, 
+            textvariable=self.proxy_url_var, 
+            width=40
+        )
         proxy_url_entry.grid(row=0, column=1, sticky='w', padx=5)
 
-        ttk.Label(self.proxy_fields_frame, text="Username:").grid(row=1, column=0, sticky='w', pady=5)
+        username_label = ttk.Label(self.proxy_fields_frame, text="Username:")
+        username_label.grid(row=1, column=0, sticky='w', pady=5)
         self.proxy_username_var = tk.StringVar(value=os.getenv("PROXY_USERNAME", ""))
-        proxy_username_entry = ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_username_var, width=40)
+        proxy_username_entry = ttk.Entry(
+            self.proxy_fields_frame,
+            textvariable=self.proxy_username_var,
+            width=40
+        )
         proxy_username_entry.grid(row=1, column=1, sticky='w', padx=5)
 
-        ttk.Label(self.proxy_fields_frame, text="Password:").grid(row=2, column=0, sticky='w', pady=5)
+        password_label = ttk.Label(self.proxy_fields_frame, text="Password:")
+        password_label.grid(row=2, column=0, sticky='w', pady=5)
         self.proxy_password_var = tk.StringVar(value=os.getenv("PROXY_PASSWORD", ""))
-        proxy_password_entry = ttk.Entry(self.proxy_fields_frame, textvariable=self.proxy_password_var, width=40, show='*')
+        proxy_password_entry = ttk.Entry(
+            self.proxy_fields_frame,
+            textvariable=self.proxy_password_var,
+            width=40,
+            show='*'
+        )
         proxy_password_entry.grid(row=2, column=1, sticky='w', padx=5)
 
         # Add tooltips for proxy configuration
-        ToolTip(proxy_checkbox, "Route requests through a proxy server.\nHelps avoid IP blocking and provides anonymity.\nRecommended for heavy scraping.")
-        ToolTip(proxy_url_entry, "Proxy server address and port.\nFormat: hostname:port or ip:port\nExample: 'proxy.example.com:8080'")
-        ToolTip(proxy_username_entry, "Username for proxy authentication.\nLeave blank if proxy doesn't require authentication.")
-        ToolTip(proxy_password_entry, "Password for proxy authentication.\nLeave blank if proxy doesn't require authentication.")
+        ToolTip(
+            proxy_checkbox, 
+            "Route requests through a proxy server.\n"
+            "Helps avoid IP blocking and provides anonymity.\n"
+            "Recommended for heavy scraping."
+        )
+        ToolTip(
+            proxy_url_entry, 
+            "Proxy server address and port.\n"
+            "Format: hostname:port or ip:port\n"
+            "Example: 'proxy.example.com:8080'"
+        )
+        ToolTip(
+            proxy_username_entry, 
+            "Username for proxy authentication.\n"
+            "Leave blank if proxy doesn't require authentication."
+        )
+        ToolTip(
+            proxy_password_entry, 
+            "Password for proxy authentication.\n"
+            "Leave blank if proxy doesn't require authentication."
+        )
 
         # Headers Section
         headers_frame = ttk.LabelFrame(scrollable_frame, text="Custom Headers")
         headers_frame.pack(fill='x', padx=20, pady=10)
 
-        ttk.Label(headers_frame, text="User Agent:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        self.user_agent_var = tk.StringVar(value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        ttk.Entry(headers_frame, textvariable=self.user_agent_var, width=60).grid(row=0, column=1, sticky='w', padx=5)
+        user_agent_label = ttk.Label(headers_frame, text="User Agent:")
+        user_agent_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        
+        self.user_agent_var = tk.StringVar(
+            value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        )
+        user_agent_entry = ttk.Entry(headers_frame, textvariable=self.user_agent_var, width=60)
+        user_agent_entry.grid(row=0, column=1, sticky='w', padx=5)
 
         # Additional headers
-        ttk.Label(headers_frame, text="Additional Headers (JSON format):").grid(row=1, column=0, sticky='nw', pady=5, padx=5)
+        additional_headers_label = ttk.Label(
+            headers_frame, 
+            text="Additional Headers (JSON format):"
+        )
+        additional_headers_label.grid(row=1, column=0, sticky='nw', pady=5, padx=5)
+        
         self.custom_headers_text = tk.Text(headers_frame, height=4, width=50)
         self.custom_headers_text.grid(row=1, column=1, sticky='w', padx=5, pady=5)
-        self.custom_headers_text.insert('1.0', '{\n  "Accept": "text/html,application/xhtml+xml",\n  "Accept-Language": "en-US,en;q=0.9"\n}')
+        self.custom_headers_text.insert(
+            '1.0',
+            '{\n'
+            '  "Accept": "text/html,application/xhtml+xml",\n'
+            '  "Accept-Language": "en-US,en;q=0.9"\n'
+            '}'
+        )
 
         # Validation & Processing Section
         validation_frame = ttk.LabelFrame(scrollable_frame, text="Validation & Processing")
@@ -752,17 +870,35 @@ class ClientGeneratorGUI:
 
     def setup_preview_tab(self, parent: ttk.Frame) -> None:
         """Set up preview and generation tab."""
-        ttk.Label(parent, text="Preview & Generate Client", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        preview_title = ttk.Label(
+            parent, 
+            text="Preview & Generate Client", 
+            font=('Arial', 14, 'bold')
+        )
+        preview_title.pack(pady=(10, 20))
 
         # Preview text area
         preview_frame = ttk.LabelFrame(parent, text="Generated Code Preview")
         preview_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
 
         self.preview_text = tk.Text(preview_frame, wrap='none', font=('Courier', 10))
-        preview_scrollbar_v = ttk.Scrollbar(preview_frame, orient='vertical', command=self.preview_text.yview)
-        preview_scrollbar_h = ttk.Scrollbar(preview_frame, orient='horizontal', command=self.preview_text.xview)
+        
+        preview_scrollbar_v = ttk.Scrollbar(
+            preview_frame, 
+            orient='vertical', 
+            command=self.preview_text.yview
+        )
+        
+        preview_scrollbar_h = ttk.Scrollbar(
+            preview_frame, 
+            orient='horizontal', 
+            command=self.preview_text.xview
+        )
 
-        self.preview_text.configure(yscrollcommand=preview_scrollbar_v.set, xscrollcommand=preview_scrollbar_h.set)
+        self.preview_text.configure(
+            yscrollcommand=preview_scrollbar_v.set, 
+            xscrollcommand=preview_scrollbar_h.set
+        )
 
         self.preview_text.pack(side='left', fill='both', expand=True)
         preview_scrollbar_v.pack(side='right', fill='y')
@@ -772,20 +908,55 @@ class ClientGeneratorGUI:
         button_frame = ttk.Frame(parent)
         button_frame.pack(fill='x', padx=20, pady=10)
 
-        update_preview_btn = ttk.Button(button_frame, text="Update Preview", command=self.update_preview)
+        update_preview_btn = ttk.Button(
+            button_frame, 
+            text="Update Preview", 
+            command=self.update_preview
+        )
         update_preview_btn.pack(side='left', padx=5)
-        generate_client_btn = ttk.Button(button_frame, text="Generate Client File", command=self.generate_client)
+        
+        generate_client_btn = ttk.Button(
+            button_frame, 
+            text="Generate Client File", 
+            command=self.generate_client
+        )
         generate_client_btn.pack(side='left', padx=5)
-        save_template_btn = ttk.Button(button_frame, text="Save Template", command=self.save_template)
+        
+        save_template_btn = ttk.Button(
+            button_frame, 
+            text="Save Template", 
+            command=self.save_template
+        )
         save_template_btn.pack(side='left', padx=5)
-        load_template_btn = ttk.Button(button_frame, text="Load Template", command=self.load_template)
+        
+        load_template_btn = ttk.Button(
+            button_frame, 
+            text="Load Template", 
+            command=self.load_template
+        )
         load_template_btn.pack(side='left', padx=5)
 
         # Add tooltips for preview and generation buttons
-        ToolTip(update_preview_btn, "Generate and display the Python code that will be created.\nUse this to review the configuration before generating the file.")
-        ToolTip(generate_client_btn, "Create the actual client Python file in the clients/ directory.\nThe client will be immediately available for use.")
-        ToolTip(save_template_btn, "Save current configuration as a reusable template.\nUseful for creating similar clients or backing up configurations.")
-        ToolTip(load_template_btn, "Load a previously saved template.\nAutomatically fills in all the form fields with saved values.")
+        ToolTip(
+            update_preview_btn, 
+            "Generate and display the Python code that will be created.\n"
+            "Use this to review the configuration before generating the file."
+        )
+        ToolTip(
+            generate_client_btn, 
+            "Create the actual client Python file in the clients/ directory.\n"
+            "The client will be immediately available for use."
+        )
+        ToolTip(
+            save_template_btn, 
+            "Save current configuration as a reusable template.\n"
+            "Useful for creating similar clients or backing up configurations."
+        )
+        ToolTip(
+            load_template_btn, 
+            "Load a previously saved template.\n"
+            "Automatically fills in all the form fields with saved values."
+        )
 
     def validate_client_id(self, *args: Any) -> None:
         """Validate client ID format."""
@@ -796,7 +967,9 @@ class ClientGeneratorGUI:
 
         # Check format
         if not re.match(r'^[a-z0-9_]+$', client_id):
-            self.validation_label.config(text="⚠ Client ID should contain only lowercase letters, numbers, and underscores")
+            self.validation_label.config(
+                text="⚠ Client ID should contain only lowercase letters, numbers, and underscores"
+            )
         elif len(client_id) < 3:
             self.validation_label.config(text="⚠ Client ID should be at least 3 characters long")
         else:

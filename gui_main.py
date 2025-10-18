@@ -34,7 +34,11 @@ def setup_exception_handler() -> None:
     """Set up a global exception handler to catch and display errors."""
     original_hook = sys.excepthook
 
-    def exception_handler(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: types.TracebackType | None) -> None:
+    def exception_handler(
+        exc_type: type[BaseException], 
+        exc_value: BaseException, 
+        exc_traceback: types.TracebackType | None
+    ) -> None:
         """Handle uncaught exceptions by showing a dialog."""
         import traceback
         error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))

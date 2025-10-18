@@ -25,7 +25,9 @@ class FieldMappingDialog:
         # Variables
         self.field_name_var = tk.StringVar(value=initial_values[0] if initial_values else "")
         self.css_selector_var = tk.StringVar(value=initial_values[1] if initial_values else "")
-        self.transform_var = tk.StringVar(value=initial_values[2] if initial_values else "clean_text")
+        self.transform_var = tk.StringVar(
+            value=initial_values[2] if initial_values else "clean_text"
+        )
 
         self.setup_dialog()
 
@@ -37,11 +39,13 @@ class FieldMappingDialog:
 
         # Field name
         ttk.Label(main_frame, text="Field Name:").grid(row=0, column=0, sticky='w', pady=5)
-        ttk.Entry(main_frame, textvariable=self.field_name_var, width=40).grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
+        field_name_entry = ttk.Entry(main_frame, textvariable=self.field_name_var, width=40)
+        field_name_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # CSS Selector
         ttk.Label(main_frame, text="CSS Selector:").grid(row=1, column=0, sticky='w', pady=5)
-        ttk.Entry(main_frame, textvariable=self.css_selector_var, width=40).grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
+        css_selector_entry = ttk.Entry(main_frame, textvariable=self.css_selector_var, width=40)
+        css_selector_entry.grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Transform function
         ttk.Label(main_frame, text="Transform Function:").grid(row=2, column=0, sticky='w', pady=5)
@@ -74,7 +78,8 @@ Transform Functions:
         button_frame.grid(row=4, column=0, columnspan=2, pady=20)
 
         ttk.Button(button_frame, text="OK", command=self.ok_clicked).pack(side='left', padx=5)
-        ttk.Button(button_frame, text="Cancel", command=self.cancel_clicked).pack(side='left', padx=5)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel_clicked)
+        cancel_btn.pack(side='left', padx=5)
 
     def ok_clicked(self) -> None:
         """Handle OK button click."""
