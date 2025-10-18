@@ -496,7 +496,8 @@ class ClientGeneratorGUI:
         self.client_id_var.trace('w', self.validate_client_id)  # type: ignore
 
         # Client Name
-        ttk.Label(form_frame, text="Client Display Name:").grid(row=1, column=0, sticky='w', pady=5)
+        client_name_label = ttk.Label(form_frame, text="Client Display Name:")
+        client_name_label.grid(row=1, column=0, sticky='w', pady=5)
         self.client_name_var = tk.StringVar()
         client_name_entry = ttk.Entry(form_frame, textvariable=self.client_name_var, width=40)
         client_name_entry.grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
@@ -604,13 +605,19 @@ class ClientGeneratorGUI:
         product_selector_entry.grid(row=3, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Part Number Regex
-        ttk.Label(form_frame, text="Part Number Regex Pattern:").grid(row=4, column=0, sticky='w', pady=5)
+        part_regex_label = ttk.Label(form_frame, text="Part Number Regex Pattern:")
+        part_regex_label.grid(row=4, column=0, sticky='w', pady=5)
         self.part_regex_var = tk.StringVar(value=r'^[\w\-/\.]{1,64}$')
         regex_entry = ttk.Entry(form_frame, textvariable=self.part_regex_var, width=50)
         regex_entry.grid(row=4, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Add tooltips for website configuration
-        ToolTip(base_url_entry, "The main website URL.\nExample: 'https://www.digikey.com', 'https://www.mouser.com'\nDo not include search paths, just the domain.")
+        base_url_tooltip = (
+            "The main website URL.\n"
+            "Example: 'https://www.digikey.com', 'https://www.mouser.com'\n"
+            "Do not include search paths, just the domain."
+        )
+        ToolTip(base_url_entry, base_url_tooltip)
         ToolTip(
             search_endpoint_entry,
             "The search page path on the website.\n"
@@ -637,7 +644,9 @@ class ClientGeneratorGUI:
         )
 
         # Add help label for regex
-        help_label = ttk.Label(form_frame, text="(Pattern to validate part numbers - e.g., letters, numbers, dashes, dots, 1-64 chars)",
+        help_text = ("(Pattern to validate part numbers - e.g., letters, numbers, "
+                     "dashes, dots, 1-64 chars)")
+        help_label = ttk.Label(form_frame, text=help_text,
                               font=('Arial', 8), foreground='gray')
         help_label.grid(row=5, column=1, sticky='w', padx=(10, 0), pady=(0, 5))
 
@@ -647,12 +656,14 @@ class ClientGeneratorGUI:
 
         # Checkboxes
         self.normalize_parts_var = tk.BooleanVar(value=True)
-        normalize_checkbox = ttk.Checkbutton(options_frame, text="Normalize part numbers (remove dashes, lowercase)",
+        normalize_text = "Normalize part numbers (remove dashes, lowercase)"
+        normalize_checkbox = ttk.Checkbutton(options_frame, text=normalize_text,
                        variable=self.normalize_parts_var)
         normalize_checkbox.pack(anchor='w', padx=10, pady=5)
 
         self.exact_match_var = tk.BooleanVar(value=True)
-        exact_match_checkbox = ttk.Checkbutton(options_frame, text="Require exact match between search and product",
+        exact_match_text = "Require exact match between search and product"
+        exact_match_checkbox = ttk.Checkbutton(options_frame, text=exact_match_text,
                        variable=self.exact_match_var)
         exact_match_checkbox.pack(anchor='w', padx=10, pady=5)
 
@@ -672,7 +683,12 @@ class ClientGeneratorGUI:
 
     def setup_fields_tab(self, parent: ttk.Frame) -> None:
         """Set up field mappings tab."""
-        ttk.Label(parent, text="Field Mappings Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        field_title = ttk.Label(
+            parent, 
+            text="Field Mappings Configuration", 
+            font=('Arial', 14, 'bold')
+        )
+        field_title.pack(pady=(10, 20))
 
         # Instructions
         instructions = ttk.Label(parent, text="Define what data to extract from product pages:",
@@ -706,9 +722,17 @@ class ClientGeneratorGUI:
         add_field_btn.pack(side='left', padx=5)
         edit_field_btn = ttk.Button(buttons_frame, text="Edit Field", command=self.edit_field)
         edit_field_btn.pack(side='left', padx=5)
-        remove_field_btn = ttk.Button(buttons_frame, text="Remove Field", command=self.remove_field)
+        remove_field_btn = ttk.Button(
+            buttons_frame, 
+            text="Remove Field", 
+            command=self.remove_field
+        )
         remove_field_btn.pack(side='left', padx=5)
-        common_fields_btn = ttk.Button(buttons_frame, text="Add Common Fields", command=self.add_common_fields)
+        common_fields_btn = ttk.Button(
+            buttons_frame, 
+            text="Add Common Fields", 
+            command=self.add_common_fields
+        )
         common_fields_btn.pack(side='left', padx=5)
 
         # Add tooltips for field mapping buttons
@@ -787,7 +811,8 @@ class ClientGeneratorGUI:
         total_timeout_entry.grid(row=2, column=1, sticky='w', padx=5)
 
         # Retry settings
-        ttk.Label(rate_frame, text="Max retries:").grid(row=3, column=0, sticky='w', pady=5, padx=5)
+        retries_label = ttk.Label(rate_frame, text="Max retries:")
+        retries_label.grid(row=3, column=0, sticky='w', pady=5, padx=5)
         self.max_retries_var = tk.StringVar(value="3")
         max_retries_entry = ttk.Entry(rate_frame, textvariable=self.max_retries_var, width=10)
         max_retries_entry.grid(row=3, column=1, sticky='w', padx=5)
@@ -1166,7 +1191,10 @@ class ClientGeneratorGUI:
                 continue
             field_name, css_selector, transform = values
 
-            transform_func = f"TRANSFORM_FUNCTIONS['{transform}']" if transform != "none" else "None"
+            if transform != "none":
+                transform_func = f"TRANSFORM_FUNCTIONS['{transform}']"
+            else:
+                transform_func = "None"
 
             field_code = f'''        "{field_name}": FieldMapping(
             css_selector="{css_selector}",
@@ -1438,7 +1466,8 @@ def {register_func_name}():
                 self.base_url_var.set(template_data.get('base_url', ''))
                 self.search_endpoint_var.set(template_data.get('search_endpoint', '/search'))
                 self.search_param_var.set(template_data.get('search_param', 'q'))
-                self.product_selector_var.set(template_data.get('product_selector', 'a.product-link'))
+                default_selector = 'a.product-link'
+                self.product_selector_var.set(template_data.get('product_selector', default_selector))
                 self.part_regex_var.set(template_data.get('part_regex', r'^[\w\-/\.]{1,64}$'))
                 self.normalize_parts_var.set(template_data.get('normalize_parts', True))
                 self.exact_match_var.set(template_data.get('exact_match', True))
@@ -1486,7 +1515,8 @@ def {register_func_name}():
                 if hasattr(self, 'product_selector_var'):
                     self.product_selector_var.set(client_config.product_link_selector)
                 if hasattr(self, 'part_regex_var'):
-                    self.part_regex_var.set(client_config.part_number_regex or r'^[\w\-/\.]{1,64}$')
+                    default_regex = r'^[\w\-/\.]{1,64}$'
+                    self.part_regex_var.set(client_config.part_number_regex or default_regex)
 
                 # Populate advanced settings
                 if hasattr(self, 'normalize_parts_var'):
@@ -1513,8 +1543,10 @@ def {register_func_name}():
                 self.status_var.set(f"Client Loaded: {client_config.client_name}")
 
                 # Show success message in log
-                self.log_message(f"✅ Loaded configuration for: {client_config.client_name}", 'success')
-                self.log_message(f"📋 {len(client_config.field_mappings)} field mappings loaded", 'info')
+                success_msg = f"✅ Loaded configuration for: {client_config.client_name}"
+                self.log_message(success_msg, 'success')
+                field_count = len(client_config.field_mappings)
+                self.log_message(f"📋 {field_count} field mappings loaded", 'info')
                 self.log_message(f"🌐 Base URL: {client_config.base_url}", 'info')
 
         except Exception as e:
@@ -1656,21 +1688,29 @@ def {register_func_name}():
             # Pass proxy configuration from GUI to subprocess
             if hasattr(self, 'use_proxy_var') and self.use_proxy_var.get():
                 proxy_host = self.proxy_url_var.get() if hasattr(self, 'proxy_url_var') else ''
-                proxy_user = self.proxy_username_var.get() if hasattr(self, 'proxy_username_var') else ''
-                proxy_pass = self.proxy_password_var.get() if hasattr(self, 'proxy_password_var') else ''
+                proxy_user = ''
+                if hasattr(self, 'proxy_username_var'):
+                    proxy_user = self.proxy_username_var.get()
+                proxy_pass = ''
+                if hasattr(self, 'proxy_password_var'):
+                    proxy_pass = self.proxy_password_var.get()
 
                 # Always set the environment variables, even if empty
                 env['PROXY_HOST'] = proxy_host
                 env['PROXY_USERNAME'] = proxy_user
                 env['PROXY_PASSWORD'] = proxy_pass
 
-                self.log_message(f"🔗 GUI Proxy Config - Host: '{proxy_host}', User: '{proxy_user}', Pass: {'*' * len(proxy_pass) if proxy_pass else '(empty)'}", 'info')
+                password_display = '*' * len(proxy_pass) if proxy_pass else '(empty)'
+                proxy_msg = (f"🔗 GUI Proxy Config - Host: '{proxy_host}', User: '{proxy_user}', "
+                           f"Pass: {password_display}")
+                self.log_message(proxy_msg, 'info')
             else:
                 # Explicitly disable proxy if unchecked in GUI
                 env['PROXY_USERNAME'] = ''
                 env['PROXY_PASSWORD'] = ''
                 env['PROXY_HOST'] = ''
-                self.log_message("🚫 Proxy disabled in GUI - clearing all proxy environment variables", 'warning')
+                warning_msg = "🚫 Proxy disabled in GUI - clearing all proxy environment variables"
+                self.log_message(warning_msg, 'warning')
 
             # Debug: Show what environment variables are actually being set
             proxy_env_vars = {k: v for k, v in env.items() if 'PROXY' in k}
@@ -1691,7 +1731,8 @@ def {register_func_name}():
             if process.stdout:
                 for line in process.stdout:
                     if line.strip():  # Only process non-empty lines
-                        # Process all output through log_rich_output which will filter appropriately
+                        # Process all output through log_rich_output
+                        # This will filter output appropriately for the UI
                         self.root.after(0, self.log_rich_output, line)
                         # Also update progress bar in real-time
                         self.root.after(0, self.update_progress_from_line, line)
@@ -1732,7 +1773,8 @@ def {register_func_name}():
 
             # Show completion message
             messagebox.showinfo("Success",
-                              f"Scraping completed successfully!\n\nResults saved to:\n{self.output_file_var.get()}")
+                              f"Scraping completed successfully!\n\n"
+                              f"Results saved to:\n{self.output_file_var.get()}")
         else:
             self.status_var.set("Failed")
             self.progress_text_var.set("Scraping failed or was stopped")
@@ -1762,7 +1804,8 @@ def {register_func_name}():
                 if total > 0:
                     percentage_float = min(100, (current / total) * 100)
                     self.progress_var.set(percentage_float)
-                    self.progress_text_var.set(f"Processing item {current} of {total} ({percentage_float:.1f}%)")
+                    progress_msg = f"Processing item {current} of {total} ({percentage_float:.1f}%)"
+                    self.progress_text_var.set(progress_msg)
                 return
 
             # Look for "Processed: n items" style updates
@@ -1814,11 +1857,12 @@ def {register_func_name}():
         self.log_text.tag_configure('info', foreground='#44AAFF')
 
         # Bold color combinations for Rich markup
-        self.log_text.tag_configure('bold_green', foreground='#00FF00', font=('Consolas', 9, 'bold'))
-        self.log_text.tag_configure('bold_blue', foreground='#5555FF', font=('Consolas', 9, 'bold'))
+        bold_font = ('Consolas', 9, 'bold')
+        self.log_text.tag_configure('bold_green', foreground='#00FF00', font=bold_font)
+        self.log_text.tag_configure('bold_blue', foreground='#5555FF', font=bold_font)
         self.log_text.tag_configure('bold_red', foreground='#FF5555', font=('Consolas', 9, 'bold'))
-        self.log_text.tag_configure('bold_yellow', foreground='#FFFF55', font=('Consolas', 9, 'bold'))
-        self.log_text.tag_configure('table_header', foreground='#00FFFF', font=('Consolas', 9, 'bold'))
+        self.log_text.tag_configure('bold_yellow', foreground='#FFFF55', font=bold_font)
+        self.log_text.tag_configure('table_header', foreground='#00FFFF', font=bold_font)
         self.log_text.tag_configure('table_row', foreground='#CCCCCC')
         self.log_text.tag_configure('black', foreground='#000000')
 
@@ -1885,16 +1929,31 @@ def {register_func_name}():
                                 r, g, b = int(codes[i + 2]), int(codes[i + 3]), int(codes[i + 4])
                                 # Map common Rich colors to our color scheme
                                 if (r, g, b) == (249, 38, 114):  # Rich pink/magenta for progress bars
-                                    current_styles = [s for s in current_styles if not s.endswith('_bar')]
+                                    # Remove progress bar styles
+                                    current_styles = [
+                                        s for s in current_styles if not s.endswith('_bar')
+                                    ]
                                     current_styles.append('magenta')
                                 elif r > 200 and g < 100 and b < 100:  # Reddish
-                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    # Remove any existing color styles
+                                    current_styles = [
+                                        s for s in current_styles 
+                                        if s not in ansi_color_map.values()
+                                    ]
                                     current_styles.append('red')
                                 elif r < 100 and g > 200 and b < 100:  # Greenish
-                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    # Remove any existing color styles
+                                    current_styles = [
+                                        s for s in current_styles 
+                                        if s not in ansi_color_map.values()
+                                    ]
                                     current_styles.append('green')
                                 elif r < 100 and g < 100 and b > 200:  # Blueish
-                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    # Remove any existing color styles
+                                    current_styles = [
+                                        s for s in current_styles 
+                                        if s not in ansi_color_map.values()
+                                    ]
                                     current_styles.append('blue')
                                 elif r > 200 and g > 200 and b < 100:  # Yellowish
                                     current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
@@ -2033,18 +2092,26 @@ def {register_func_name}():
                 has_bold = 'bold' in styles if styles else False
 
                 for style in (styles or []):
-                    if style in ['green', 'red', 'yellow', 'cyan', 'blue', 'magenta', 'bright_green', 'bright_red', 'bright_yellow', 'bright_cyan', 'bright_blue', 'bright_magenta']:
+                    color_styles = [
+                        'green', 'red', 'yellow', 'cyan', 'blue', 'magenta',
+                        'bright_green', 'bright_red', 'bright_yellow', 
+                        'bright_cyan', 'bright_blue', 'bright_magenta'
+                    ]
+                    if style in color_styles:
                         if has_bold:
                             # Check if we have a bold variant
                             bold_style = f'bold_{style}'
-                            if bold_style in ['bold_green', 'bold_blue', 'bold_red', 'bold_yellow']:
+                            bold_styles = ['bold_green', 'bold_blue', 'bold_red', 'bold_yellow']
+                            if bold_style in bold_styles:
                                 gui_styles.append(bold_style)
                             else:
                                 gui_styles.extend([style, 'bold'])
                         else:
                             gui_styles.append(style)
-                    elif style == 'bold' and not any(c in styles for c in ['green', 'red', 'yellow', 'cyan', 'blue', 'magenta']):
-                        gui_styles.append('bold')
+                    elif style == 'bold':
+                        basic_colors = ['green', 'red', 'yellow', 'cyan', 'blue', 'magenta']
+                        if not any(c in styles for c in basic_colors):
+                            gui_styles.append('bold')
 
                 # If no specific styles, apply context-based styling
                 final_style: list[str] | str | None = gui_styles if gui_styles else None
@@ -2197,7 +2264,7 @@ def {register_func_name}():
     def add_terminal_welcome(self) -> None:
         """Add a terminal-like welcome message."""
         welcome_text = """╔══════════════════════════════════════════════════════════════════╗
-║                    Multii-Client Scraper Terminal                      ║
+║                    Multii-Client Scraper Terminal                ║
 ║                      Ready for Operations                        ║
 ╚══════════════════════════════════════════════════════════════════╝
 
@@ -2307,11 +2374,13 @@ class FieldMappingDialog:
 
         # Field name
         ttk.Label(main_frame, text="Field Name:").grid(row=0, column=0, sticky='w', pady=5)
-        ttk.Entry(main_frame, textvariable=self.field_name_var, width=40).grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
+        field_name_entry = ttk.Entry(main_frame, textvariable=self.field_name_var, width=40)
+        field_name_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # CSS Selector
         ttk.Label(main_frame, text="CSS Selector:").grid(row=1, column=0, sticky='w', pady=5)
-        ttk.Entry(main_frame, textvariable=self.css_selector_var, width=40).grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
+        css_selector_entry = ttk.Entry(main_frame, textvariable=self.css_selector_var, width=40)
+        css_selector_entry.grid(row=1, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Transform function
         ttk.Label(main_frame, text="Transform Function:").grid(row=2, column=0, sticky='w', pady=5)
