@@ -307,7 +307,9 @@ class ClientGeneratorGUI:
         files_frame.pack(fill='x', padx=20, pady=10)
 
         # Input file selection
-        ttk.Label(files_frame, text="Input CSV file:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        input_label = ttk.Label(files_frame, text="Input CSV file:")
+        input_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        
         self.input_file_var = tk.StringVar()
         input_entry = ttk.Entry(files_frame, textvariable=self.input_file_var, width=50)
         input_entry.grid(row=0, column=1, sticky='w', padx=5, pady=5)
@@ -316,11 +318,17 @@ class ClientGeneratorGUI:
         input_browse_btn.grid(row=0, column=2, padx=5, pady=5)
 
         # Add tooltips for input file
-        ToolTip(input_entry, "CSV file containing part numbers to scrape.\nShould have a 'Part Number' column with the items to search for.")
+        ToolTip(
+            input_entry, 
+            "CSV file containing part numbers to scrape.\n"
+            "Should have a 'Part Number' column with the items to search for."
+        )
         ToolTip(input_browse_btn, "Click to browse and select your input CSV file")
 
         # Output file selection
-        ttk.Label(files_frame, text="Output CSV file:").grid(row=1, column=0, sticky='w', pady=5, padx=5)
+        output_label = ttk.Label(files_frame, text="Output CSV file:")
+        output_label.grid(row=1, column=0, sticky='w', pady=5, padx=5)
+        
         self.output_file_var = tk.StringVar()
         output_entry = ttk.Entry(files_frame, textvariable=self.output_file_var, width=50)
         output_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
@@ -329,7 +337,11 @@ class ClientGeneratorGUI:
         output_browse_btn.grid(row=1, column=2, padx=5, pady=5)
 
         # Add tooltips for output file
-        ToolTip(output_entry, "Where to save the scraping results.\nWill contain all found product information including prices, availability, etc.")
+        ToolTip(
+            output_entry, 
+            "Where to save the scraping results.\n"
+            "Will contain all found product information including prices, availability, etc."
+        )
         ToolTip(output_browse_btn, "Click to choose where to save the results CSV file")
 
         # Options Section
@@ -337,27 +349,56 @@ class ClientGeneratorGUI:
         options_frame.pack(fill='x', padx=20, pady=10)
 
         # Concurrency
-        ttk.Label(options_frame, text="Concurrency limit:").grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        concurrency_label = ttk.Label(options_frame, text="Concurrency limit:")
+        concurrency_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
+        
         self.concurrency_var = tk.StringVar(value="3")
-        concurrency_entry = ttk.Entry(options_frame, textvariable=self.concurrency_var, width=10)
+        concurrency_entry = ttk.Entry(
+            options_frame, 
+            textvariable=self.concurrency_var, 
+            width=10
+        )
         concurrency_entry.grid(row=0, column=1, sticky='w', padx=5)
 
         # Chunk size
-        ttk.Label(options_frame, text="Chunk size:").grid(row=0, column=2, sticky='w', pady=5, padx=(20, 5))
+        chunk_label = ttk.Label(options_frame, text="Chunk size:")
+        chunk_label.grid(row=0, column=2, sticky='w', pady=5, padx=(20, 5))
+        
         self.chunk_size_var = tk.StringVar(value="500")
-        chunk_entry = ttk.Entry(options_frame, textvariable=self.chunk_size_var, width=10)
+        chunk_entry = ttk.Entry(
+            options_frame,
+            textvariable=self.chunk_size_var,
+            width=10
+        )
         chunk_entry.grid(row=0, column=3, sticky='w', padx=5)
 
         # Email notification
         self.email_notify_var = tk.BooleanVar()
-        email_checkbox = ttk.Checkbutton(options_frame, text="Send email notification when complete",
-                       variable=self.email_notify_var)
+        email_checkbox = ttk.Checkbutton(
+            options_frame, 
+            text="Send email notification when complete",
+            variable=self.email_notify_var
+        )
         email_checkbox.grid(row=1, column=0, columnspan=4, sticky='w', padx=5, pady=5)
 
         # Add tooltips for scraping options
-        ToolTip(concurrency_entry, "Number of simultaneous web requests.\nHigher = faster but may overwhelm servers.\nRecommended: 2-5")
-        ToolTip(chunk_entry, "Items to process before saving progress.\nLarger chunks = better performance but less frequent saves.\nRecommended: 100-1000")
-        ToolTip(email_checkbox, "Send an email notification when scraping completes.\nRequires email configuration in settings.")
+        ToolTip(
+            concurrency_entry, 
+            "Number of simultaneous web requests.\n"
+            "Higher = faster but may overwhelm servers.\n"
+            "Recommended: 2-5"
+        )
+        ToolTip(
+            chunk_entry, 
+            "Items to process before saving progress.\n"
+            "Larger chunks = better performance but less frequent saves.\n"
+            "Recommended: 100-1000"
+        )
+        ToolTip(
+            email_checkbox, 
+            "Send an email notification when scraping completes.\n"
+            "Requires email configuration in settings."
+        )
 
         # Progress Section
         progress_frame = ttk.LabelFrame(parent, text="Progress")
@@ -427,16 +468,30 @@ class ClientGeneratorGUI:
     def setup_basic_tab(self, parent: ttk.Frame) -> None:
         """Set up basic information tab."""
         # Title
-        ttk.Label(parent, text="Client Basic Information", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        title_label = ttk.Label(
+            parent, 
+            text="Client Basic Information", 
+            font=('Arial', 14, 'bold')
+        )
+        title_label.pack(pady=(10, 20))
 
         # Create form fields
         form_frame = ttk.Frame(parent)
         form_frame.pack(fill='x', padx=20)
 
         # Client ID
-        ttk.Label(form_frame, text="Client ID (unique, lowercase, no spaces):").grid(row=0, column=0, sticky='w', pady=5)
+        client_id_label = ttk.Label(
+            form_frame, 
+            text="Client ID (unique, lowercase, no spaces):"
+        )
+        client_id_label.grid(row=0, column=0, sticky='w', pady=5)
+        
         self.client_id_var = tk.StringVar()
-        self.client_id_entry = ttk.Entry(form_frame, textvariable=self.client_id_var, width=40)
+        self.client_id_entry = ttk.Entry(
+            form_frame, 
+            textvariable=self.client_id_var, 
+            width=40
+        )
         self.client_id_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
         self.client_id_var.trace('w', self.validate_client_id)  # type: ignore
 
@@ -478,15 +533,29 @@ class ClientGeneratorGUI:
 
     def setup_website_tab(self, parent: ttk.Frame) -> None:
         """Set up website configuration tab."""
-        ttk.Label(parent, text="Website Configuration", font=('Arial', 14, 'bold')).pack(pady=(10, 20))
+        website_title = ttk.Label(
+            parent, 
+            text="Website Configuration", 
+            font=('Arial', 14, 'bold')
+        )
+        website_title.pack(pady=(10, 20))
 
         form_frame = ttk.Frame(parent)
         form_frame.pack(fill='x', padx=20)
 
         # Base URL
-        ttk.Label(form_frame, text="Base URL (e.g., https://example.com):").grid(row=0, column=0, sticky='w', pady=5)
+        base_url_label = ttk.Label(
+            form_frame, 
+            text="Base URL (e.g., https://example.com):"
+        )
+        base_url_label.grid(row=0, column=0, sticky='w', pady=5)
+        
         self.base_url_var = tk.StringVar()
-        base_url_entry = ttk.Entry(form_frame, textvariable=self.base_url_var, width=50)
+        base_url_entry = ttk.Entry(
+            form_frame,
+            textvariable=self.base_url_var,
+            width=50
+        )
         base_url_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
 
         # Search Endpoint
