@@ -53,8 +53,8 @@ async def test_process_part_number_fetch_error():
         output_columns=["Part Number", "Status", "Error"]
     )
     
-    # Directly raise the error by patching the function at a higher level
-    with patch('generic_scraper.generic_scraper.fetch', side_effect=FetchError("fail")):
+    # Directly raise the error by patching the function at the proper module level
+    with patch('generic_scraper.fetch', side_effect=FetchError("fail")):
         result = await process_part_number(session, 'BAD', asyncio.Semaphore(1), client_config=test_config)
         assert result['Status'] == 'FetchError', f"Expected 'FetchError' but got {result['Status']}"
         assert 'Error' in result, "Expected 'Error' key in result"
@@ -183,7 +183,7 @@ async def test_process_part_number_parsing_integration():
     )
 
     # Patch the fetch function at the proper module level and use our test config
-    with patch('generic_scraper.generic_scraper.fetch', side_effect=fetch_side_effect):
+    with patch('generic_scraper.fetch', side_effect=fetch_side_effect):
         result = await process_part_number(
             session, 'ABC123', asyncio.Semaphore(1), client_config=test_config
         )
