@@ -18,16 +18,15 @@ gui_path = project_root / "gui"
 if str(gui_path) not in sys.path:
     sys.path.append(str(gui_path))
 
+from client_generator import ClientGeneratorGUI  # noqa: E402
+
 # Try to import client modules
 try:
     # Import required client modules for auto-registration
-    import clients  # noqa: F401
-    import G2S  # noqa: F401
+    import clients  # noqa: F401, E402
+    import G2S  # noqa: F401, E402
 except ImportError:
     print("Warning: Unable to import client modules")
-
-# Import the main client generator GUI
-from client_generator import ClientGeneratorGUI
 
 
 def setup_exception_handler() -> None:
@@ -35,8 +34,8 @@ def setup_exception_handler() -> None:
     original_hook = sys.excepthook
 
     def exception_handler(
-        exc_type: type[BaseException], 
-        exc_value: BaseException, 
+        exc_type: type[BaseException],
+        exc_value: BaseException,
         exc_traceback: types.TracebackType | None
     ) -> None:
         """Handle uncaught exceptions by showing a dialog."""
@@ -47,7 +46,7 @@ def setup_exception_handler() -> None:
             # Try to show error in GUI if possible
             from tkinter import messagebox
             messagebox.showerror("Error", f"An unexpected error occurred:\n\n{error_msg}")
-        except:
+        except Exception:
             # Fall back to console error
             print(f"ERROR: {error_msg}")
 

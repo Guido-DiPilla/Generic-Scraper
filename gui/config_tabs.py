@@ -202,7 +202,7 @@ class WebsiteTab(BaseTab):
         help_label = ttk.Label(
             form_frame,
             text=help_text,
-            font=('Arial', 8), 
+            font=('Arial', 8),
             foreground='gray'
         )
         help_label.grid(row=5, column=1, sticky='w', padx=(10, 0), pady=(0, 5))
@@ -281,8 +281,8 @@ class FieldsTab(BaseTab):
         remove_field_btn = ttk.Button(buttons_frame, text="Remove Field", command=self.remove_field)
         remove_field_btn.pack(side='left', padx=5)
         common_fields_btn = ttk.Button(
-            buttons_frame, 
-            text="Add Common Fields", 
+            buttons_frame,
+            text="Add Common Fields",
             command=self.add_common_fields
         )
         common_fields_btn.pack(side='left', padx=5)

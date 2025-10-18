@@ -78,7 +78,7 @@ def check_env_variables() -> bool:
         proxy_issues.append("PROXY_USERNAME is required when PROXY_PASSWORD is set")
 
     # Special check for email notifications
-    email_setting = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "").lower() 
+    email_setting = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "").lower()
     email_enabled = email_setting in ("true", "yes", "1", "on")
     if email_enabled:
         for var, description in EMAIL_VARS.items():

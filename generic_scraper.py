@@ -107,13 +107,13 @@ def extract_field_value(soup: BeautifulSoup, field_mapping: FieldMapping) -> str
                 if field_mapping.attribute:
                     # Extract from attribute
                     attr_value = element.get(field_mapping.attribute, field_mapping.default_value)
-                    value = (str(attr_value) 
-                            if attr_value is not None 
+                    value = (str(attr_value)
+                            if attr_value is not None
                             else field_mapping.default_value)
                 else:
                     # Extract text content
-                    value = (element.get_text(strip=True) 
-                            if hasattr(element, 'get_text') 
+                    value = (element.get_text(strip=True)
+                            if hasattr(element, 'get_text')
                             else str(element))
 
         # Apply regex pattern if specified
@@ -149,14 +149,14 @@ def check_exact_match(part_number: str, soup: BeautifulSoup, config: ClientConfi
 
     # Normalize the input part number
     normalized_input = (normalize_part_number(part_number)
-                      if config.normalize_part_number 
+                      if config.normalize_part_number
                       else part_number.lower())
 
     # Check product title
     title_element = soup.find("h1", class_="productView-title")
     if title_element and hasattr(title_element, "text"):
         normalized_title = (normalize_part_number(title_element.text)
-                        if config.normalize_part_number 
+                        if config.normalize_part_number
                         else title_element.text.lower())
         if normalized_input == normalized_title:
             return True
@@ -167,7 +167,7 @@ def check_exact_match(part_number: str, soup: BeautifulSoup, config: ClientConfi
         sku_span = sku_div.find("span")
         if sku_span and hasattr(sku_span, "text"):
             normalized_sku = (normalize_part_number(sku_span.text)
-                          if config.normalize_part_number 
+                          if config.normalize_part_number
                           else sku_span.text.lower())
             if normalized_input == normalized_sku:
                 return True
@@ -246,7 +246,7 @@ async def process_part_number_generic(
 
             # Ensure we have a string URL (handle cases where get() returns a list)
             product_url = (str(product_url_raw)
-                      if not isinstance(product_url_raw, str) 
+                      if not isinstance(product_url_raw, str)
                       else product_url_raw)
 
             # Handle relative URLs

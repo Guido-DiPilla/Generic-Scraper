@@ -44,15 +44,15 @@ class OutputFormat(str, Enum):
 
 @app.command()  # type: ignore[misc]
 def main(
-    input_csv: Path = typer.Option(..., "--input-csv", help="Input CSV file path"),
-    output_csv: Path = typer.Option(..., "--output-csv", help="Output file path (CSV/JSON/Excel)"),
-    client: str = typer.Option(..., "--client", help="Client ID (e.g., 'g2s')"),
-    log_level: str | None = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),
-    dry_run: bool = typer.Option(False, help="Dry run mode (no writes)"),
-    output_format: OutputFormat = typer.Option(
+    input_csv: Path = typer.Option(..., "--input-csv", help="Input CSV file path"),  # noqa: B008
+    output_csv: Path = typer.Option(..., "--output-csv", help="Output file path (CSV/JSON/Excel)"),  # noqa: B008
+    client: str = typer.Option(..., "--client", help="Client ID (e.g., 'g2s')"),  # noqa: B008
+    log_level: str | None = typer.Option(None, help="Log level (INFO, DEBUG, etc.)"),  # noqa: B008
+    dry_run: bool = typer.Option(False, help="Dry run mode (no writes)"),  # noqa: B008
+    output_format: OutputFormat = typer.Option(  # noqa: B008
         OutputFormat.csv, help="Output format: csv, json, or excel"
     ),
-    resume: bool = typer.Option(
+    resume: bool = typer.Option(  # noqa: B008
         False, help="Resume from existing output by skipping already processed part numbers"
     ),
 ) -> None:
@@ -105,19 +105,19 @@ def main(
                             console.print("[cyan]Proxy Connection Details:[/cyan]")
                             ip = data.get('ip', 'unknown')
                             console.print(f"  🌐 External IP: [bold blue]{ip}[/bold blue]")
-                            
+
                             city = data.get('city', 'unknown')
                             region = data.get('region', 'unknown')
                             country = data.get('country_name', 'unknown')
                             location = f"{city}, {region}, {country}"
                             console.print(f"  📍 Location: [yellow]{location}[/yellow]")
-                            
+
                             org = data.get('org', 'unknown')
                             console.print(f"  🏢 ISP: [magenta]{org}[/magenta]")
-                            
+
                             country_code = data.get('country_code', 'unknown')
                             console.print(f"  🌍 Country Code: [green]{country_code}[/green]")
-                            
+
                             timezone = data.get('timezone', 'unknown')
                             console.print(f"  ⏰ Timezone: [cyan]{timezone}[/cyan]")
 
@@ -125,7 +125,7 @@ def main(
                             if data.get('postal'):
                                 postal = data.get('postal')
                                 console.print(f"  📮 Postal Code: [dim]{postal}[/dim]")
-                                
+
                             if data.get('latitude') and data.get('longitude'):
                                 lat = data.get('latitude')
                                 lng = data.get('longitude')
@@ -138,7 +138,7 @@ def main(
                                 'isp': data.get('org'),
                                 'timezone': data.get('timezone')
                             }
-                            
+
                             # Format summary with filtered non-empty values
                             summary_parts = [f'{k}={v}' for k, v in key_fields.items() if v]
                             summary = ' | '.join(summary_parts)
@@ -408,8 +408,8 @@ def main(
                         if not dry_run:
                             if output_format == OutputFormat.csv:
                                 save_results_atomic(
-                                    output_csv, 
-                                    all_results, 
+                                    output_csv,
+                                    all_results,
                                     client_config.output_columns
                                 )
                             elif output_format == OutputFormat.json:

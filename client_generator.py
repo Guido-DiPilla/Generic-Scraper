@@ -309,7 +309,7 @@ class ClientGeneratorGUI:
         # Input file selection
         input_label = ttk.Label(files_frame, text="Input CSV file:")
         input_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        
+
         self.input_file_var = tk.StringVar()
         input_entry = ttk.Entry(files_frame, textvariable=self.input_file_var, width=50)
         input_entry.grid(row=0, column=1, sticky='w', padx=5, pady=5)
@@ -319,7 +319,7 @@ class ClientGeneratorGUI:
 
         # Add tooltips for input file
         ToolTip(
-            input_entry, 
+            input_entry,
             "CSV file containing part numbers to scrape.\n"
             "Should have a 'Part Number' column with the items to search for."
         )
@@ -328,7 +328,7 @@ class ClientGeneratorGUI:
         # Output file selection
         output_label = ttk.Label(files_frame, text="Output CSV file:")
         output_label.grid(row=1, column=0, sticky='w', pady=5, padx=5)
-        
+
         self.output_file_var = tk.StringVar()
         output_entry = ttk.Entry(files_frame, textvariable=self.output_file_var, width=50)
         output_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
@@ -338,7 +338,7 @@ class ClientGeneratorGUI:
 
         # Add tooltips for output file
         ToolTip(
-            output_entry, 
+            output_entry,
             "Where to save the scraping results.\n"
             "Will contain all found product information including prices, availability, etc."
         )
@@ -351,11 +351,11 @@ class ClientGeneratorGUI:
         # Concurrency
         concurrency_label = ttk.Label(options_frame, text="Concurrency limit:")
         concurrency_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        
+
         self.concurrency_var = tk.StringVar(value="3")
         concurrency_entry = ttk.Entry(
-            options_frame, 
-            textvariable=self.concurrency_var, 
+            options_frame,
+            textvariable=self.concurrency_var,
             width=10
         )
         concurrency_entry.grid(row=0, column=1, sticky='w', padx=5)
@@ -363,7 +363,7 @@ class ClientGeneratorGUI:
         # Chunk size
         chunk_label = ttk.Label(options_frame, text="Chunk size:")
         chunk_label.grid(row=0, column=2, sticky='w', pady=5, padx=(20, 5))
-        
+
         self.chunk_size_var = tk.StringVar(value="500")
         chunk_entry = ttk.Entry(
             options_frame,
@@ -375,7 +375,7 @@ class ClientGeneratorGUI:
         # Email notification
         self.email_notify_var = tk.BooleanVar()
         email_checkbox = ttk.Checkbutton(
-            options_frame, 
+            options_frame,
             text="Send email notification when complete",
             variable=self.email_notify_var
         )
@@ -383,19 +383,19 @@ class ClientGeneratorGUI:
 
         # Add tooltips for scraping options
         ToolTip(
-            concurrency_entry, 
+            concurrency_entry,
             "Number of simultaneous web requests.\n"
             "Higher = faster but may overwhelm servers.\n"
             "Recommended: 2-5"
         )
         ToolTip(
-            chunk_entry, 
+            chunk_entry,
             "Items to process before saving progress.\n"
             "Larger chunks = better performance but less frequent saves.\n"
             "Recommended: 100-1000"
         )
         ToolTip(
-            email_checkbox, 
+            email_checkbox,
             "Send an email notification when scraping completes.\n"
             "Requires email configuration in settings."
         )
@@ -469,8 +469,8 @@ class ClientGeneratorGUI:
         """Set up basic information tab."""
         # Title
         title_label = ttk.Label(
-            parent, 
-            text="Client Basic Information", 
+            parent,
+            text="Client Basic Information",
             font=('Arial', 14, 'bold')
         )
         title_label.pack(pady=(10, 20))
@@ -481,15 +481,15 @@ class ClientGeneratorGUI:
 
         # Client ID
         client_id_label = ttk.Label(
-            form_frame, 
+            form_frame,
             text="Client ID (unique, lowercase, no spaces):"
         )
         client_id_label.grid(row=0, column=0, sticky='w', pady=5)
-        
+
         self.client_id_var = tk.StringVar()
         self.client_id_entry = ttk.Entry(
-            form_frame, 
-            textvariable=self.client_id_var, 
+            form_frame,
+            textvariable=self.client_id_var,
             width=40
         )
         self.client_id_entry.grid(row=0, column=1, sticky='w', padx=(10, 0), pady=5)
@@ -535,8 +535,8 @@ class ClientGeneratorGUI:
     def setup_website_tab(self, parent: ttk.Frame) -> None:
         """Set up website configuration tab."""
         website_title = ttk.Label(
-            parent, 
-            text="Website Configuration", 
+            parent,
+            text="Website Configuration",
             font=('Arial', 14, 'bold')
         )
         website_title.pack(pady=(10, 20))
@@ -546,11 +546,11 @@ class ClientGeneratorGUI:
 
         # Base URL
         base_url_label = ttk.Label(
-            form_frame, 
+            form_frame,
             text="Base URL (e.g., https://example.com):"
         )
         base_url_label.grid(row=0, column=0, sticky='w', pady=5)
-        
+
         self.base_url_var = tk.StringVar()
         base_url_entry = ttk.Entry(
             form_frame,
@@ -565,7 +565,7 @@ class ClientGeneratorGUI:
             text="Search Endpoint (e.g., /search):"
         )
         endpoint_label.grid(row=1, column=0, sticky='w', pady=5)
-        
+
         self.search_endpoint_var = tk.StringVar(value="/search")
         search_endpoint_entry = ttk.Entry(
             form_frame,
@@ -580,7 +580,7 @@ class ClientGeneratorGUI:
             text="Search Parameter Name (e.g., q, search, query):"
         )
         param_label.grid(row=2, column=0, sticky='w', pady=5)
-        
+
         self.search_param_var = tk.StringVar(value="q")
         search_param_entry = ttk.Entry(
             form_frame,
@@ -591,11 +591,11 @@ class ClientGeneratorGUI:
 
         # Product Link Selector
         link_selector_label = ttk.Label(
-            form_frame, 
+            form_frame,
             text="Product Link CSS Selector:"
         )
         link_selector_label.grid(row=3, column=0, sticky='w', pady=5)
-        
+
         self.product_selector_var = tk.StringVar(value="a.product-link")
         product_selector_entry = ttk.Entry(
             form_frame,
@@ -684,8 +684,8 @@ class ClientGeneratorGUI:
     def setup_fields_tab(self, parent: ttk.Frame) -> None:
         """Set up field mappings tab."""
         field_title = ttk.Label(
-            parent, 
-            text="Field Mappings Configuration", 
+            parent,
+            text="Field Mappings Configuration",
             font=('Arial', 14, 'bold')
         )
         field_title.pack(pady=(10, 20))
@@ -723,14 +723,14 @@ class ClientGeneratorGUI:
         edit_field_btn = ttk.Button(buttons_frame, text="Edit Field", command=self.edit_field)
         edit_field_btn.pack(side='left', padx=5)
         remove_field_btn = ttk.Button(
-            buttons_frame, 
-            text="Remove Field", 
+            buttons_frame,
+            text="Remove Field",
             command=self.remove_field
         )
         remove_field_btn.pack(side='left', padx=5)
         common_fields_btn = ttk.Button(
-            buttons_frame, 
-            text="Add Common Fields", 
+            buttons_frame,
+            text="Add Common Fields",
             command=self.add_common_fields
         )
         common_fields_btn.pack(side='left', padx=5)
@@ -819,7 +819,7 @@ class ClientGeneratorGUI:
 
         # Add tooltips for rate limiting
         ToolTip(
-            request_delay_ms_entry, 
+            request_delay_ms_entry,
             "Delay between requests in milliseconds.\n"
             "Lower values = faster scraping but more aggressive.\n"
             "Higher values = slower but more polite.\n"
@@ -829,19 +829,19 @@ class ClientGeneratorGUI:
             "1000ms ≈ 1 request/sec"
         )
         ToolTip(
-            request_timeout_entry, 
+            request_timeout_entry,
             "Seconds to wait for each HTTP request before timing out.\n"
             "Increase for slow websites.\n"
             "Recommended: 15-60"
         )
         ToolTip(
-            total_timeout_entry, 
+            total_timeout_entry,
             "Maximum seconds to wait for the entire scraping operation.\n"
             "Prevents infinite hangs.\n"
             "Recommended: 300-3600"
         )
         ToolTip(
-            max_retries_entry, 
+            max_retries_entry,
             "How many times to retry failed requests.\n"
             "Higher values improve reliability but slow down errors.\n"
             "Recommended: 2-5"
@@ -853,9 +853,9 @@ class ClientGeneratorGUI:
 
         # Add instruction label
         instruction_label = ttk.Label(
-            proxy_frame, 
+            proxy_frame,
             text="Proxy is enabled by default with credentials from environment variables:",
-            font=('Arial', 9), 
+            font=('Arial', 9),
             foreground='gray'
         )
         instruction_label.pack(anchor='w', padx=5, pady=(5, 0))
@@ -863,8 +863,8 @@ class ClientGeneratorGUI:
         # Default to proxy enabled with your credentials pre-filled
         self.use_proxy_var = tk.BooleanVar(value=True)
         proxy_checkbox = ttk.Checkbutton(
-            proxy_frame, 
-            text="Use proxy", 
+            proxy_frame,
+            text="Use proxy",
             variable=self.use_proxy_var,
             command=self.toggle_proxy_fields
         )
@@ -878,8 +878,8 @@ class ClientGeneratorGUI:
         proxy_url_label.grid(row=0, column=0, sticky='w', pady=5)
         self.proxy_url_var = tk.StringVar(value=os.getenv("PROXY_HOST", "rp.proxyscrape.com:6060"))
         proxy_url_entry = ttk.Entry(
-            self.proxy_fields_frame, 
-            textvariable=self.proxy_url_var, 
+            self.proxy_fields_frame,
+            textvariable=self.proxy_url_var,
             width=40
         )
         proxy_url_entry.grid(row=0, column=1, sticky='w', padx=5)
@@ -907,24 +907,24 @@ class ClientGeneratorGUI:
 
         # Add tooltips for proxy configuration
         ToolTip(
-            proxy_checkbox, 
+            proxy_checkbox,
             "Route requests through a proxy server.\n"
             "Helps avoid IP blocking and provides anonymity.\n"
             "Recommended for heavy scraping."
         )
         ToolTip(
-            proxy_url_entry, 
+            proxy_url_entry,
             "Proxy server address and port.\n"
             "Format: hostname:port or ip:port\n"
             "Example: 'proxy.example.com:8080'"
         )
         ToolTip(
-            proxy_username_entry, 
+            proxy_username_entry,
             "Username for proxy authentication.\n"
             "Leave blank if proxy doesn't require authentication."
         )
         ToolTip(
-            proxy_password_entry, 
+            proxy_password_entry,
             "Password for proxy authentication.\n"
             "Leave blank if proxy doesn't require authentication."
         )
@@ -935,7 +935,7 @@ class ClientGeneratorGUI:
 
         user_agent_label = ttk.Label(headers_frame, text="User Agent:")
         user_agent_label.grid(row=0, column=0, sticky='w', pady=5, padx=5)
-        
+
         self.user_agent_var = tk.StringVar(
             value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         )
@@ -944,11 +944,11 @@ class ClientGeneratorGUI:
 
         # Additional headers
         additional_headers_label = ttk.Label(
-            headers_frame, 
+            headers_frame,
             text="Additional Headers (JSON format):"
         )
         additional_headers_label.grid(row=1, column=0, sticky='nw', pady=5, padx=5)
-        
+
         self.custom_headers_text = tk.Text(headers_frame, height=4, width=50)
         self.custom_headers_text.grid(row=1, column=1, sticky='w', padx=5, pady=5)
         self.custom_headers_text.insert(
@@ -992,8 +992,8 @@ class ClientGeneratorGUI:
     def setup_preview_tab(self, parent: ttk.Frame) -> None:
         """Set up preview and generation tab."""
         preview_title = ttk.Label(
-            parent, 
-            text="Preview & Generate Client", 
+            parent,
+            text="Preview & Generate Client",
             font=('Arial', 14, 'bold')
         )
         preview_title.pack(pady=(10, 20))
@@ -1003,21 +1003,21 @@ class ClientGeneratorGUI:
         preview_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
 
         self.preview_text = tk.Text(preview_frame, wrap='none', font=('Courier', 10))
-        
+
         preview_scrollbar_v = ttk.Scrollbar(
-            preview_frame, 
-            orient='vertical', 
+            preview_frame,
+            orient='vertical',
             command=self.preview_text.yview
         )
-        
+
         preview_scrollbar_h = ttk.Scrollbar(
-            preview_frame, 
-            orient='horizontal', 
+            preview_frame,
+            orient='horizontal',
             command=self.preview_text.xview
         )
 
         self.preview_text.configure(
-            yscrollcommand=preview_scrollbar_v.set, 
+            yscrollcommand=preview_scrollbar_v.set,
             xscrollcommand=preview_scrollbar_h.set
         )
 
@@ -1030,51 +1030,51 @@ class ClientGeneratorGUI:
         button_frame.pack(fill='x', padx=20, pady=10)
 
         update_preview_btn = ttk.Button(
-            button_frame, 
-            text="Update Preview", 
+            button_frame,
+            text="Update Preview",
             command=self.update_preview
         )
         update_preview_btn.pack(side='left', padx=5)
-        
+
         generate_client_btn = ttk.Button(
-            button_frame, 
-            text="Generate Client File", 
+            button_frame,
+            text="Generate Client File",
             command=self.generate_client
         )
         generate_client_btn.pack(side='left', padx=5)
-        
+
         save_template_btn = ttk.Button(
-            button_frame, 
-            text="Save Template", 
+            button_frame,
+            text="Save Template",
             command=self.save_template
         )
         save_template_btn.pack(side='left', padx=5)
-        
+
         load_template_btn = ttk.Button(
-            button_frame, 
-            text="Load Template", 
+            button_frame,
+            text="Load Template",
             command=self.load_template
         )
         load_template_btn.pack(side='left', padx=5)
 
         # Add tooltips for preview and generation buttons
         ToolTip(
-            update_preview_btn, 
+            update_preview_btn,
             "Generate and display the Python code that will be created.\n"
             "Use this to review the configuration before generating the file."
         )
         ToolTip(
-            generate_client_btn, 
+            generate_client_btn,
             "Create the actual client Python file in the clients/ directory.\n"
             "The client will be immediately available for use."
         )
         ToolTip(
-            save_template_btn, 
+            save_template_btn,
             "Save current configuration as a reusable template.\n"
             "Useful for creating similar clients or backing up configurations."
         )
         ToolTip(
-            load_template_btn, 
+            load_template_btn,
             "Load a previously saved template.\n"
             "Automatically fills in all the form fields with saved values."
         )
@@ -1939,35 +1939,35 @@ def {register_func_name}():
                                 elif r > 200 and g < 100 and b < 100:  # Reddish
                                     # Remove any existing color styles
                                     current_styles = [
-                                        s for s in current_styles 
+                                        s for s in current_styles
                                         if s not in ansi_color_map.values()
                                     ]
                                     current_styles.append('red')
                                 elif r < 100 and g > 200 and b < 100:  # Greenish
                                     # Remove any existing color styles
                                     current_styles = [
-                                        s for s in current_styles 
+                                        s for s in current_styles
                                         if s not in ansi_color_map.values()
                                     ]
                                     current_styles.append('green')
                                 elif r < 100 and g < 100 and b > 200:  # Blueish
                                     # Remove any existing color styles
                                     current_styles = [
-                                        s for s in current_styles 
+                                        s for s in current_styles
                                         if s not in ansi_color_map.values()
                                     ]
                                     current_styles.append('blue')
                                 elif r > 200 and g > 200 and b < 100:  # Yellowish
                                     # Remove any existing color styles
                                     current_styles = [
-                                        s for s in current_styles 
+                                        s for s in current_styles
                                         if s not in ansi_color_map.values()
                                     ]
                                     current_styles.append('yellow')
                                 elif r < 150 and g > 200 and b > 200:  # Cyanish
                                     # Remove any existing color styles
                                     current_styles = [
-                                        s for s in current_styles 
+                                        s for s in current_styles
                                         if s not in ansi_color_map.values()
                                     ]
                                     current_styles.append('cyan')
@@ -1977,7 +1977,7 @@ def {register_func_name}():
                         elif code in ansi_color_map:  # Standard color
                             # Remove other colors first
                             current_styles = [
-                                s for s in current_styles 
+                                s for s in current_styles
                                 if s not in ansi_color_map.values()
                             ]
                             current_styles.append(ansi_color_map[code])
@@ -2107,7 +2107,7 @@ def {register_func_name}():
                 for style in (styles or []):
                     color_styles = [
                         'green', 'red', 'yellow', 'cyan', 'blue', 'magenta',
-                        'bright_green', 'bright_red', 'bright_yellow', 
+                        'bright_green', 'bright_red', 'bright_yellow',
                         'bright_cyan', 'bright_blue', 'bright_magenta'
                     ]
                     if style in color_styles:
@@ -2360,8 +2360,8 @@ Generic Scraper v2.0 - Terminal Interface
 
 class FieldMappingDialog:
     def __init__(
-        self, 
-        parent: Any, 
+        self,
+        parent: Any,
         initial_values: tuple[str, str, str] | tuple[Any, ...] | str | None = None
     ) -> None:
         self.result: tuple[str, str, str] | None = None
@@ -2374,7 +2374,7 @@ class FieldMappingDialog:
         self.dialog.grab_set()
 
         # Center the dialog
-        self.dialog.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
+        self.dialog.geometry(f"+{parent.winfo_rootx() + 50}+{parent.winfo_rooty() + 50}")
 
         # Variables
         self.field_name_var = tk.StringVar(value=initial_values[0] if initial_values else "")

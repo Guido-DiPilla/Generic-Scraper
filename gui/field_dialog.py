@@ -20,7 +20,7 @@ class FieldMappingDialog:
         self.dialog.grab_set()
 
         # Center the dialog
-        self.dialog.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
+        self.dialog.geometry(f"+{parent.winfo_rootx() + 50}+{parent.winfo_rooty() + 50}")
 
         # Variables
         self.field_name_var = tk.StringVar(value=initial_values[0] if initial_values else "")
