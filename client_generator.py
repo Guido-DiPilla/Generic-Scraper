@@ -1467,7 +1467,8 @@ def {register_func_name}():
                 self.search_endpoint_var.set(template_data.get('search_endpoint', '/search'))
                 self.search_param_var.set(template_data.get('search_param', 'q'))
                 default_selector = 'a.product-link'
-                self.product_selector_var.set(template_data.get('product_selector', default_selector))
+                selector = template_data.get('product_selector', default_selector)
+                self.product_selector_var.set(selector)
                 self.part_regex_var.set(template_data.get('part_regex', r'^[\w\-/\.]{1,64}$'))
                 self.normalize_parts_var.set(template_data.get('normalize_parts', True))
                 self.exact_match_var.set(template_data.get('exact_match', True))
@@ -1928,7 +1929,8 @@ def {register_func_name}():
                             if i + 4 < len(codes):
                                 r, g, b = int(codes[i + 2]), int(codes[i + 3]), int(codes[i + 4])
                                 # Map common Rich colors to our color scheme
-                                if (r, g, b) == (249, 38, 114):  # Rich pink/magenta for progress bars
+                                # Rich pink/magenta for progress bars
+                                if (r, g, b) == (249, 38, 114):
                                     # Remove progress bar styles
                                     current_styles = [
                                         s for s in current_styles if not s.endswith('_bar')
@@ -1956,17 +1958,28 @@ def {register_func_name}():
                                     ]
                                     current_styles.append('blue')
                                 elif r > 200 and g > 200 and b < 100:  # Yellowish
-                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    # Remove any existing color styles
+                                    current_styles = [
+                                        s for s in current_styles 
+                                        if s not in ansi_color_map.values()
+                                    ]
                                     current_styles.append('yellow')
                                 elif r < 150 and g > 200 and b > 200:  # Cyanish
-                                    current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                                    # Remove any existing color styles
+                                    current_styles = [
+                                        s for s in current_styles 
+                                        if s not in ansi_color_map.values()
+                                    ]
                                     current_styles.append('cyan')
                                 i += 4  # Skip the RGB values
                             else:
                                 i += 2
                         elif code in ansi_color_map:  # Standard color
                             # Remove other colors first
-                            current_styles = [s for s in current_styles if s not in ansi_color_map.values()]
+                            current_styles = [
+                                s for s in current_styles 
+                                if s not in ansi_color_map.values()
+                            ]
                             current_styles.append(ansi_color_map[code])
                         i += 1
 
@@ -2346,7 +2359,11 @@ Generic Scraper v2.0 - Terminal Interface
 
 
 class FieldMappingDialog:
-    def __init__(self, parent: Any, initial_values: tuple[str, str, str] | tuple[Any, ...] | str | None = None) -> None:
+    def __init__(
+        self, 
+        parent: Any, 
+        initial_values: tuple[str, str, str] | tuple[Any, ...] | str | None = None
+    ) -> None:
         self.result: tuple[str, str, str] | None = None
 
         # Create dialog
@@ -2362,7 +2379,9 @@ class FieldMappingDialog:
         # Variables
         self.field_name_var = tk.StringVar(value=initial_values[0] if initial_values else "")
         self.css_selector_var = tk.StringVar(value=initial_values[1] if initial_values else "")
-        self.transform_var = tk.StringVar(value=initial_values[2] if initial_values else "clean_text")
+        default_transform = "clean_text"
+        transform_value = initial_values[2] if initial_values else default_transform
+        self.transform_var = tk.StringVar(value=transform_value)
 
         self.setup_dialog()
 
@@ -2413,7 +2432,8 @@ Transform Functions:
         button_frame.grid(row=4, column=0, columnspan=2, pady=20)
 
         ttk.Button(button_frame, text="OK", command=self.ok_clicked).pack(side='left', padx=5)
-        ttk.Button(button_frame, text="Cancel", command=self.cancel_clicked).pack(side='left', padx=5)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel_clicked)
+        cancel_btn.pack(side='left', padx=5)
 
     def ok_clicked(self) -> None:
         """Handle OK button click."""

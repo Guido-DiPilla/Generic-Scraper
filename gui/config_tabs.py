@@ -195,11 +195,16 @@ class WebsiteTab(BaseTab):
             "Example: '^[A-Z0-9-]{3,20}$' for uppercase alphanumeric with dashes.")
 
         # Add help label for regex
-        help_label = ttk.Label(form_frame,
-            text=(
-                "(Pattern to validate part numbers - e.g., letters, numbers, dashes, dots, 1-64 chars)"
-            ),
-            font=('Arial', 8), foreground='gray')
+        help_text = (
+            "Pattern to validate part numbers - e.g., letters, numbers, "
+            "dashes, dots, 1-64 chars"
+        )
+        help_label = ttk.Label(
+            form_frame,
+            text=help_text,
+            font=('Arial', 8), 
+            foreground='gray'
+        )
         help_label.grid(row=5, column=1, sticky='w', padx=(10, 0), pady=(0, 5))
 
         # Options frame

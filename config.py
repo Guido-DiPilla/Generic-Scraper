@@ -62,7 +62,8 @@ def get_config() -> ScraperConfig:
     log_file: Path = Path(os.getenv("LOG_FILE", "modern_refactored.log"))
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     email_notify_to: str = os.getenv("EMAIL_NOTIFY_TO", proxy_username)
-    email_notifications_enabled: bool = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "true").lower() in ["true", "1", "yes", "on"]
+    email_setting = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "true").lower()
+    email_notifications_enabled: bool = email_setting in ["true", "1", "yes", "on"]
     # Polite per-request delay in milliseconds (default 150ms) - required to avoid bot detection
     try:
         request_delay_ms_env = os.getenv("REQUEST_DELAY_MS", "150")

@@ -25,6 +25,7 @@ email_enabled = os.getenv('EMAIL_NOTIFICATIONS_ENABLED', '').lower() in ('true',
 # Print configuration
 print("Email Configuration:")
 print(f"- EMAIL_USER: {'set' if email_user else 'not set'} ({email_user})")
-print(f"- EMAIL_PASS: {'set' if email_pass else 'not set'} {'*' * (len(email_pass) if email_pass else 0)}")
+mask = '*' * (len(email_pass) if email_pass else 0)
+print(f"- EMAIL_PASS: {'set' if email_pass else 'not set'} {mask}")
 print(f"- EMAIL_NOTIFY_TO: {'set' if email_notify_to else 'not set'} ({email_notify_to})")
 print(f"- EMAIL_NOTIFICATIONS_ENABLED: {email_enabled}")

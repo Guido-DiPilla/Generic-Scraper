@@ -33,7 +33,10 @@ def create_test_supplier_config() -> ClientConfig:
         ),
     }
 
-    output_columns = ['Part Number', 'Status Code', 'Exists', 'Price', 'In Stock', 'Description', 'Status']
+    output_columns = [
+        'Part Number', 'Status Code', 'Exists', 'Price',
+        'In Stock', 'Description', 'Status'
+    ]
 
     return ClientConfig(
         client_id="test_supplier",
